@@ -1,0 +1,135 @@
+import sqlite3
+from pathlib import Path
+
+class BancoDeDados:
+
+    def __init__(self, nome_banco='dados.db'):
+        pasta = Path(__file__).parent.parent / 'data'
+        self.pasta = Path(pasta)
+        self.caminho_banco = self.pasta / nome_banco
+        self._criar_pasta()
+        self.conn = sqlite3.connect(self.caminho_banco)
+        self._criar_tabela()
+
+    def _criar_pasta(self):
+        if not self.pasta.exists():
+            self.pasta.mkdir()
+            print(f"Pasta '{self.pasta}' criada com sucesso.")
+        else:
+            print(f"Pasta '{self.pasta}' já existe.")
+
+    def _criar_tabela(self):
+        criar_tabela_sql = """
+        CREATE TABLE IF NOT EXISTS vaivem (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id_2 INTEGER,
+            romaneio1 TEXT,
+            segmento TEXT,
+            data1 DATE,                -- Data da saída
+            transportadora TEXT,
+            frota_cntr TEXT,
+            placa TEXT,
+            lacre TEXT,
+            origem TEXT,
+            destino TEXT,
+            turno TEXT,
+            conferente1 TEXT,
+            localizacao TEXT,
+            item TEXT,
+            desc TEXT,
+            quantidade INTEGER,
+            nf TEXT,
+            motivo TEXT,
+            justificativa TEXT,
+            status TEXT,
+            conferente2 TEXT,
+            romaneio2 TEXT,
+            data2 DATE,                -- Data da chegada
+            end_user TEXT,
+            final_hour DATETIME,       -- Data + hora final
+            pc TEXT
+        );
+        """
+        cursor = self.conn.cursor()
+        cursor.execute(criar_tabela_sql)
+        self.conn.commit()
+        print(f"Tabela 'vaivem' criada/verificada com sucesso em '{self.caminho_banco}'.")
+    
+    def gerar_id2(self):
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT MAX(id_2) FROM vaivem")
+        resultado = cursor.fetchone()
+        ultimo_id2 = resultado[0] if resultado[0] is not None else 0
+        novo_id2 = ultimo_id2 + 1
+        return novo_id2
+
+    
+    def inserir_dado(self, valores: tuple):
+        sql = """
+        INSERT INTO vaivem (
+            id_2,romaneio1, segmento, data1, transportadora, frota_cntr, placa, lacre,
+            origem, destino, turno, conferente1, localizacao, item, desc,
+            quantidade, nf, motivo, justificativa, status, conferente2, romaneio2, data2,
+            end_user, final_hour, pc
+        ) VALUES (
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+        )
+        """
+        cursor = self.conn.cursor()
+        cursor.execute(sql, valores)
+        self.conn.commit()
+        print(f"Registro inserido com sucesso. ID: {cursor.lastrowid}")
+
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, tipo, valor, traceback):
+        self.conn.close()
+        print(f"Conexão com o banco '{self.caminho_banco.name}' encerrada.")
+
+    def receber_in_sql(self, id2: int, lista: list):
+        """
+        Atualiza os dados de recebimento no banco.
+
+        Parâmetros
+        ----------
+        id2 : int
+            Identificador do embarque (coluna id_2) que será atualizado.
+        lista : list
+            Deve conter na ordem:
+                [status, conferente2, romaneio2, data2, end_user, final_hour, pc]
+        """
+        # Validação da lista
+        if len(lista) != 7:
+            raise ValueError("A lista deve conter 7 valores: status, conferente2, romaneio2, data2, end_user, final_hour, pc")
+
+        params = tuple(lista) + (id2,)
+
+        with sqlite3.connect(self.caminho_banco) as conn:
+            cursor = conn.execute(
+                '''
+                UPDATE vaivem
+                SET status = ?, 
+                    conferente2 = ?, 
+                    romaneio2 = ?, 
+                    data2 = ?, 
+                    end_user = ?, 
+                    final_hour = ?, 
+                    pc = ?
+                WHERE id_2 = ?
+                ''',
+                params
+            )
+            conn.commit()
+
+            if cursor.rowcount == 0:  # nenhuma linha foi atualizada
+                raise ValueError(f"ID {id2} não encontrado")
+
+
+
+
+# Exemplo de uso
+if __name__ == "__main__":
+    with BancoDeDados() as bd:
+        print("Banco de dados pronto para uso.")

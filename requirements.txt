@@ -1,0 +1,13 @@
+babel==2.17.0
+customtkinter==5.2.2
+darkdetect==0.8.0
+numpy==2.3.3
+packaging==25.0
+pandas==2.3.2
+pillow==11.3.0
+python-dateutil==2.9.0.post0
+pytz==2025.2
+six==1.17.0
+tkcalendar==1.6.1
+tksheet==7.5.16
+tzdata==2025.2
