@@ -1,22 +1,30 @@
 from logging import root
 import customtkinter as ctk
+from utils.config import *
 from src.vaivem_embarcar import Entradas
 from src.vaivem_receber import Recebimento
-from utils.config import RecursosVisuais, CustomSheet
+from src.cab_entrada import FormularioEntrada
+from src.cabotagem import Cabotagem
+from src.rodoviario import Rodoviario
+from src.cab_entrada import FormularioEntrada
+
 
 class JanelaPrincipal:
     def __init__(self):
         """Inicializa a janela principal da aplicação."""
-        ctk.set_appearance_mode("light")
+        ctk.set_appearance_mode("dark")
 
         self.root = ctk.CTk()
         self.root.title("Sistema")
         self.root.geometry('815x460')
+        self.root.iconbitmap(r'utils\img\icone.ico')
 
         self.entradas = Entradas(self.root)
         self.recebimento = Recebimento(self.root)
+        self.cabotagem = Cabotagem(self.root)
+        self.rodoviario = Rodoviario(self.root)
 
-        self.root.configure(fg_color='white')
+        self.root.configure(fg_color='gray20')
         self.root.resizable(False, False)
 
         # Frame lateral (menu)
@@ -26,22 +34,35 @@ class JanelaPrincipal:
         #self.path_img, self.img_light, self.img_dark  = self._carregar_recursos()
         self.img = RecursosVisuais()
 
-        # Botão no menu lateral
+        # Label Vai Vem e botões
         self.label_menu = ctk.CTkLabel(self.frame_esq, text="Vai Vem", font=("Roboto", 16))
         self.label_menu.place(x=60, y=20)
 
-        # Botões de navegação
-        self.btn_vaivem_embarcar = ctk.CTkButton(self.frame_esq, text="Embarcar", command=self.abrir_entradas)
+        self.btn_vaivem_embarcar = CustomButton(self.frame_esq, text="Embarcar", command=self.abrir_entradas)
         self.btn_vaivem_embarcar.place(x=30, y=50)
 
-        self.btn_vaivem_receber = ctk.CTkButton(self.frame_esq, text="Receber", command=self.abrir_recebimento)
+        self.btn_vaivem_receber = CustomButton(self.frame_esq, text="Receber", command=self.abrir_recebimento)
         self.btn_vaivem_receber.place(x=30, y=100)
 
-        self.frame_botoes = ctk.CTkFrame(self.frame_esq, width=598, height=37)
-        self.frame_botoes.place(x=0, y=412)
+        # Label Cabotagem e botões
+        self.label_cabotagem = ctk.CTkLabel(self.frame_esq, text="Cabotagem", font=("Roboto", 16))
+        self.label_cabotagem.place(x=60, y=170)
 
-        self.botao_tema = ctk.CTkButton(
-            self.frame_botoes,
+        self.btn_cabotagem = CustomButton(self.frame_esq, text="Cabotagem", command=self.abrir_cabotagem)
+        self.btn_cabotagem.place(x=30, y=200)
+
+        # Label Cabotagem e botões
+        self.label_rodoviario = ctk.CTkLabel(self.frame_esq, text="Rodoviario", font=("Roboto", 16))
+        self.label_rodoviario.place(x=60, y=280)
+
+        self.btn_rodoviario = CustomButton(self.frame_esq, text="Rodoviario")
+        self.btn_rodoviario.place(x=30, y=310)
+
+        self.frame_btn_cfg = ctk.CTkFrame(self.frame_esq, width=598, height=37)
+        self.frame_btn_cfg.place(x=0, y=412)
+
+        self.botao_tema = CustomButton(
+            self.frame_btn_cfg,
             image=self.img.dark,
             text="",
             width=30,
@@ -55,13 +76,25 @@ class JanelaPrincipal:
     def abrir_entradas(self):
         """Abre a janela de Entradas, escondendo a de Recebimento se necessário."""
         self.recebimento.esconder()
+        self.cabotagem.esconder()
+        self.rodoviario.esconder()
         self.entradas.mostrar()
+        
 
     def abrir_recebimento(self):
         """Abre a janela de Recebimento, escondendo a de Entradas se necessário."""
         self.entradas.esconder()
+        self.cabotagem.esconder()
+        self.rodoviario.esconder()
         self.recebimento.mostrar()
-  
+    
+    def abrir_cabotagem(self):
+        self.entradas.esconder()
+        self.cabotagem.mostrar()
+        self.rodoviario.esconder()
+        self.recebimento.esconder()
+
+
     def alterar_tema(self):
         '''Altera o tema da aplicação entre claro e escuro.'''
         self.modo_atual = ctk.get_appearance_mode()
@@ -85,6 +118,7 @@ class JanelaPrincipal:
                     lista.append(child)
                 coletar_sheets(child, lista)
             return lista
+
 
         sheets = coletar_sheets(self.root)
         for sheet in sheets:

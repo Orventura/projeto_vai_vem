@@ -6,6 +6,7 @@ from datetime import datetime
 from tkinter import messagebox
 from src.bd import BancoDeDados
 
+
 class Entradas:
     def __init__(self, root):
         self.root = root
@@ -42,7 +43,7 @@ class Entradas:
 
 
 
-            self.e_tipo_veiculo = ctk.CTkSegmentedButton(self.frames['frame_1'], values=["Conteiner", "Carreta"], command=lambda x: self.carregar_sheet())
+            self.e_tipo_veiculo = ctk.CTkSegmentedButton(self.frames['frame_1'], values=["Conteiner", "Carreta"], command=lambda x: self.carregar_sheet(),)
             self.e_tipo_veiculo.place(x=33, y=10)
             self.e_tipo_veiculo.set('Carreta')
 
@@ -110,12 +111,12 @@ class Entradas:
             #elf.e_motivo.focus()
 
             # Widgets do frame_5
-            self.btn_salvar = ctk.CTkButton(self.frames['frame_5'], text="Salvar", width=100, command=lambda: self.salvar_dados())
+            self.btn_salvar = CustomButton(self.frames['frame_5'], text="Salvar", width=100, command=lambda: self.salvar_dados())
             self.btn_salvar.place(x=490, y=5)
 
-            self.botao_adict = ctk.CTkButton(
+            self.botao_adict = CustomButton(
             self.frames['frame_4'],
-            image=self.img.adict,
+            image=self.img.adicionar,
             text="",
             width=30,
             height=30,
@@ -124,18 +125,6 @@ class Entradas:
             command=lambda: self.adicionar_produto()
             )   
             self.botao_adict.place(x=556, y=10)
-
-            self.botao_subtract = ctk.CTkButton(
-            self.frames['frame_4'], 
-            image=self.img.subtract,
-            text="",
-            width=30,
-            height=30,
-            fg_color="transparent",
-            hover_color="darkgray",
-            #command=lambda: self._alterar_tema()
-            )
-            self.botao_subtract.place(x=556, y=47)
 
             self.e_justific = CustomEntry(self.frames['frame_4'], placeholder_text='Justificativas', width=538)
             self.e_justific.place(x=10, y=47)
@@ -385,7 +374,8 @@ class Entradas:
         produtos = []
         if self.sheet_produtos is not None:
             produtos = self.pegar_dados_sheet_produtos()
-            produtos = [linha for linha in produtos if any(str(campo).strip() for campo in linha)]
+            produtos = [linha for linha in produtos if any(str(campo).strip().upper() for campo in linha)]
+
 
         # Coleta valores dos widgets
         dicionario = {}

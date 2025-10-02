@@ -12,9 +12,8 @@ from datetime import datetime
 class Recebimento:
     def __init__(self, root):
         self.root = root
-        self.tabela_vai_vem = vai_vem_pendente()
+        self.tabela_vai_vem, self.colunas = vai_vem_pendente()
         self.tabela_filtrada = self.tabela_vai_vem.copy()
-
         self.frame = None
         self.sheet = None
         self.entry_pesquisa = None
@@ -31,19 +30,13 @@ class Recebimento:
         self.frame_tabela.place(x=5, y=5)
 
             #"frame_5": {"x": 0, "y": 412, "width": 598, "height": 37},
-        self.frame_pesquisa = ctk.CTkFrame(self.frame, width=598, height=37)
+        self.frame_pesquisa = ctk.CTkFrame(self.frame, width=598, height=37, fg_color='transparent')
         self.mostrar_frame_pesquisa()
         
 
         self.e_pesquisa = CustomEntry(self.frame_pesquisa, placeholder_text="🔍      Pesquisar...", width=200)
         self.e_pesquisa.place(x=10, y=3)
         self.e_pesquisa.bind("<KeyRelease>", self.filtrar_sheet)
-
-        self.btn_receber = ctk.CTkButton(self.frame_pesquisa, text='📦   Receber', command=self.selecionar_veículo)
-        self.btn_receber.place(x=215, y=3)
-
-        self.e_exportar = ctk.CTkButton(self.frame_pesquisa, text='📁   Exportar')
-        self.e_exportar.place(x=365, y=3)
 
         self.frame_receber = ctk.CTkFrame(self.frame, width=598, height=37)
         
@@ -53,8 +46,43 @@ class Recebimento:
         self.e_romaneio = CustomEntry(self.frame_receber, placeholder_text="Romaneio")
         self.e_romaneio.place(x=223, y=3)
 
-        self.btn_salvar = ctk.CTkButton(self.frame_receber, text='💾   Salvar', command=self.receber_veículo)
+        self.btn_salvar = CustomButton(self.frame_receber, text='💾   Salvar', command=self.receber_veículo)
         self.btn_salvar.place(x=400, y=3)
+
+        self.img = RecursosVisuais()
+
+        self.label_hover = ctk.CTkLabel(self.frame_pesquisa, text="", font=("Arial", 12), text_color='gray', width=50, height=37)
+        self.label_hover.place(x=250, y=1)
+
+        self.botoes_info = {
+            "Receber Veículo": {"imagem": self.img.receber, "comando": self.selecionar_veículo},
+            "Exportar Planilha": {"imagem": self.img.exportar, "comando": lambda: print("Editar")},
+
+        }
+
+        self.criar_botoes()
+
+    def criar_botoes(self):
+        frame_botoes = ctk.CTkFrame(self.frame_pesquisa, height=37, width=50)
+        frame_botoes.place(x=420, y=3)
+        
+        for i, (nome, info) in enumerate(self.botoes_info.items()):
+            botao = ctk.CTkButton(
+                frame_botoes,
+                text="",
+                image=info["imagem"],
+                command=info["comando"],
+                width=35,
+                height=35,
+                fg_color="transparent",
+                hover_color="#cccccc",
+                corner_radius=5
+            )
+            botao.grid(row=0, column=i, padx=5)
+
+            # Bind de hover
+            botao.bind("<Enter>", lambda e, n=nome: self.label_hover.configure(text=n))
+            botao.bind("<Leave>", lambda e: self.label_hover.configure(text=""))
 
         self.carregar_sheet()
 
@@ -68,7 +96,7 @@ class Recebimento:
         self.sheet = CustomSheet(
             self.frame_tabela,
             data=self.tabela_filtrada.values.tolist(),
-            headers=list(self.tabela_filtrada.columns),
+            headers=self.colunas,
             width=580,
             height=400,
             show_row_index=True,
@@ -84,7 +112,7 @@ class Recebimento:
 
     def atualizar_tabelas(self):
         """Atualiza os registros pendentes do banco"""
-        self.tabela_vai_vem = vai_vem_pendente()
+        self.tabela_vai_vem, self.colunas = vai_vem_pendente()
         self.tabela_filtrada = self.tabela_vai_vem.copy()
 
     def filtrar_sheet(self, event=None):
@@ -92,7 +120,7 @@ class Recebimento:
         texto = self.e_pesquisa.get().strip()      # novo Entry de pesquisa
 
         # Carrega todo o DataFrame do banco
-        df = vai_vem_pendente()                    # pega todos os pendentes do banco
+        df, colunas = vai_vem_pendente()                    # pega todos os pendentes do banco
 
         # Se há texto, filtra localmente no pandas
         if texto:
@@ -124,13 +152,13 @@ class Recebimento:
         """
         try:
             # --- Dados do sistema ---
-            status = 'Finalizado'
-            user = getpass.getuser()                # usuário do PC
-            pc = platform.node()                     # nome do PC
-            data = datetime.now().strftime('%Y-%m-%d')
-            data_hora = datetime.now().strftime('%Y-%m-%d %H:%M')
+            status = 'FINALIZADO'
+            user = str(getpass.getuser()).upper()                # usuário do PC
+            pc = str(platform.node()).upper()                     # nome do PC
+            data = datetime.now().strftime('%Y-%m-%d').upper()
+            data_hora = datetime.now().strftime('%Y-%m-%d %H:%M').upper()
             dados = self.selecionar_veículo()
-            veiculo = dados[4]
+            veiculo = str(dados[4]).upper()
 
             # --- Dados da seleção ---
             if dados is None:
