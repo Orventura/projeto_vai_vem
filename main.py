@@ -16,7 +16,7 @@ class JanelaPrincipal:
 
         self.root = ctk.CTk()
         self.root.title("Sistema")
-        self.root.geometry('815x460')
+        self.root.geometry('1000x460')
         self.root.iconbitmap(r'utils\img\icone.ico')
 
         self.entradas = Entradas(self.root)

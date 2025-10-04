@@ -22,23 +22,23 @@ class Recebimento:
         self.modo_atual = ctk.get_appearance_mode()
 
         # Frame principal
-        self.frame = ctk.CTkFrame(self.root, width=600, height=450)
+        self.frame = ctk.CTkFrame(self.root, width=780, height=450)
         self.frame.place(x=210, y=5)
 
         # Frame para a tabela
-        self.frame_tabela = ctk.CTkFrame(self.frame, width=600, height=440)
-        self.frame_tabela.place(x=5, y=5)
+        self.frame_tabela = ctk.CTkFrame(self.frame, width=780, height=440, fg_color='red')
+        self.frame_tabela.place(x=5, y=2)
 
             #"frame_5": {"x": 0, "y": 412, "width": 598, "height": 37},
-        self.frame_pesquisa = ctk.CTkFrame(self.frame, width=598, height=37, fg_color='transparent')
+        self.frame_pesquisa = ctk.CTkFrame(self.frame, width=780, height=37, fg_color='transparent')
         self.mostrar_frame_pesquisa()
         
 
         self.e_pesquisa = CustomEntry(self.frame_pesquisa, placeholder_text="🔍      Pesquisar...", width=200)
-        self.e_pesquisa.place(x=10, y=3)
+        self.e_pesquisa.place(x=10, y=2)
         self.e_pesquisa.bind("<KeyRelease>", self.filtrar_sheet)
 
-        self.frame_receber = ctk.CTkFrame(self.frame, width=598, height=37)
+        self.frame_receber = ctk.CTkFrame(self.frame, width=780, height=37)
         
         self.e_conferente = CustomEntry(self.frame_receber, placeholder_text="Conferente",width=210)
         self.e_conferente.place(x=3, y=3)
@@ -97,8 +97,8 @@ class Recebimento:
             self.frame_tabela,
             data=self.tabela_filtrada.values.tolist(),
             headers=self.colunas,
-            width=580,
-            height=400,
+            width=770,
+            height=403,
             show_row_index=True,
             show_x_scrollbar=True,
             show_y_scrollbar=True,

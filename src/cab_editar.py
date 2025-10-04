@@ -5,7 +5,7 @@ from utils.config import CustomButton, CustomComboBox, CustomEntry, CustomLabel
 
 class EditarStatus(ctk.CTkToplevel):
 
-    def __init__(self, master, lista: list, bd_path, lista_fabrica, lista_status):
+    def __init__(self, master, lista: list, bd_path, lista_fabrica, lista_status, destino):
         
         super().__init__(master)
         self.title("ALTERAR STATUS")

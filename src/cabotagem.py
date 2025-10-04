@@ -28,20 +28,20 @@ class Cabotagem:
         
 
         # Frame principal
-        self.frame = ctk.CTkFrame(self.root, width=600, height=450)
+        self.frame = ctk.CTkFrame(self.root, width=783, height=450)
         self.frame.place(x=210, y=5)
 
         self.frame_inferior = ctk.CTkFrame(self.frame, width=598, height=37, fg_color='transparent')
         self.mostrar_frame_inferior()
 
         self.label_hover = ctk.CTkLabel(self.frame_inferior, text="", font=("Arial", 12), text_color='darkgray', width=50, height=37)
-        self.label_hover.place(x=250, y=1)
+        self.label_hover.place(x=230, y=1)
 
 
         self.botoes_info = {
-            "Adicionar Veículo": {"imagem": self.img.adicionar, "comando": lambda: self.abrir_formulario(self.root)},
+            "Adicionar Veículo": {"imagem": self.img.adicionar, "comando": lambda: self.abrir_entrada_cabotagem(self.root)},
             "Editar Status": {"imagem": self.img.editar, "comando": lambda: self.abrir_editar_status(self.root)},
-            "Liberar Veículo": {"imagem": self.img.liberar, "comando": lambda: abrir_liberacao(self.root)},
+            "Liberar Veículo": {"imagem": self.img.liberar, "comando": lambda: self.abrir_liberacao()},
             "Registrar Saída": {"imagem": self.img.sair, "comando": lambda: print("Sair")},
             "Retornar Veículo": {"imagem": self.img.retornar, "comando": lambda: print("Retornar")},
         }
@@ -50,7 +50,7 @@ class Cabotagem:
 
     def criar_botoes(self):
         frame_botoes = ctk.CTkFrame(self.frame_inferior, height=37, width=105, fg_color='transparent')
-        frame_botoes.place(x=370, y=3)
+        frame_botoes.place(x=345, y=3)
         
         for i, (nome, info) in enumerate(self.botoes_info.items()):
             botao = ctk.CTkButton(
@@ -78,14 +78,14 @@ class Cabotagem:
     def carregar_sheet(self):
         """Carrega a Sheet com os dados atuais"""
         self.df_cabotagem_completa, self.df_cabotagem_sheet = veiculos_cabotagem()
-        print(self.df_cabotagem_sheet.head())
+
 
 
         self.sheet = CustomSheet(
             self.frame,
             data=self.df_cabotagem_sheet.values.tolist(),
             headers=list(self.df_cabotagem_sheet.columns),
-            width=593,
+            width=778,
             height=406,
             show_row_index=True,
             show_x_scrollbar=True,
@@ -97,9 +97,9 @@ class Cabotagem:
         self.sheet.change_theme('dark' if self.modo_atual == 'Dark' else 'light_blue')
         self.sheet.set_all_column_widths()
         self.sheet.place(x=3, y=3)
-        #self.sheet.font(("Calibri", 10, "normal"))         # Fonte da tabela
-        #self.sheet.header_font(("Calibri", 10, "bold"))    # Fonte do cabeçalho
-        #self.sheet.index_font(("Calibri", 10, "normal"))   # Fonte do índice (se estiver visível)
+        self.sheet.font(("Calibri", 10, "normal"))         # Fonte da tabela
+        self.sheet.header_font(("Calibri", 10, "bold"))    # Fonte do cabeçalho
+        self.sheet.index_font(("Calibri", 10, "normal"))   # Fonte do índice (se estiver visível)
 
 
     def resetar_sheet(self):
@@ -143,12 +143,10 @@ class Cabotagem:
     def mostrar_frame_inferior(self):
         self.frame_inferior.place(x=0, y=412)
 
-    def abrir_formulario(self, root):
-        self.formulario = FormularioEntrada(root)
+    def abrir_entrada_cabotagem(self, root):
+        self.formulario = FormularioEntrada(master=root, on_close=self.resetar_sheet)
         self.formulario.grab_set()
         self.formulario.focus_force()
-
-
 
     def abrir_editar_status(self, root):
         try:
@@ -163,13 +161,6 @@ class Cabotagem:
             linha = selecionados[0]
             dados_linha = self.sheet.get_row_data(linha)
 
-            # Validação: garantir que a linha tenha colunas
-            #if len(dados_linha) < 18:
-            #    messagebox.showwarning(  (conteiner, bd_path, lista_fabrica, lista_status)
-            #        "Aviso",
-            #        "A tabela não possui o número padrão de colunas para capturar o ID."
-            #    )
-            #    return None
             self.formulario = EditarStatus(root, dados_linha, 'Banco.bd',    ['PHILCO 1', 'PHILCO 2'], ['VAZIO', 'CHEIO'])
             self.formulario.grab_set()
             self.formulario.focus_force()
@@ -189,16 +180,9 @@ class Cabotagem:
             linha = selecionados[0]
             dados_linha = self.sheet.get_row_data(linha)
 
-            # Validação: garantir que a linha tenha colunas
-            #if len(dados_linha) < 18:
-            #    messagebox.showwarning(  (conteiner, bd_path, lista_fabrica, lista_status)
-            #        "Aviso",
-            #        "A tabela não possui o número padrão de colunas para capturar o ID."
-            #    )
-            #    return None
             app = Liberacao(
             master=self.root,
-            conteiner=dados_linha[5],
+            conteiner=dados_linha,
             bd_path='pathdb',
             lista_fabrica=['PHILCO 1', 'PHILCO 2'],
             lista_status=['VAZIO', 'CHEIO'],

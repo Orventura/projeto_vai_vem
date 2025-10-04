@@ -1,15 +1,74 @@
 # Configurações dos frames do menu Entradas
 subframes = {
-    "frame_1": {"x": 0, "y": 0, "width": 198, "height": 170},
-    "frame_2": {"x": 200, "y": 0, "width": 198, "height": 170},
-    "frame_3": {"x": 400, "y": 0, "width": 198, "height": 170},
-    "frame_4": {"x": 0, "y": 173, "width": 598, "height": 236},
-    "frame_5": {"x": 0, "y": 412, "width": 598, "height": 37},
+    "frame_1": {"x": 90, "y": 0, "width": 198, "height": 170},
+    "frame_2": {"x": 290, "y": 0, "width": 198, "height": 170},
+    "frame_3": {"x": 490, "y": 0, "width": 198, "height": 170},
+    "frame_4": {"x": 0, "y": 173, "width": 790, "height": 236},
+    "frame_5": {"x": 0, "y": 412, "width": 790, "height": 37},
 }
 
 
+def dicionario_entrada_veiculos(valor: list):
+    """Dicionario que recebe os dados da interface Lançar entradas CABOTAGEM"""
+    dicionario1 = {
+        "DT_ENTRADA": valor[0],
+        "BK_ENTRADA": valor[1],
+        "FABRICA": valor[2],
+        "ARMADOR": valor[3],
+        "TRANSPORTADOR": valor[4],
+        "CONTEINER": valor[5],
+        "NOTA_FISCAL": None,
+        "ARMADOR_BOOKING_DESTINO": None,
+        "LACRE_ARMADOR": None,
+        "LACRE_PHILCO": None,
+        "PESO_BRUTO": None,
+        "PESO_LIQUIDO": None,
+        "VALOR": None,
+        "OBS": None,
+        "ISCA_1": None,
+        "ISCA_2": None,
+        "STATUS": valor[7],
+        "DESTINO": valor[6],
+        "DIAS_PARADOS": None,
+        "DT_SAIDA": None,
+        "OBS_2": None
+    }
+    return dicionario1
 
-def dados_para_input(valor: list):
+def dicionario_editar_status(valor2: list, user):
+    try:# garante que a lista tem pelo menos 20 elementos
+        #$#valor2 = valor2 + [None] * (20 - len(valor2))
+        print(valor2)
+
+        dicionario2 = {
+            'DT_ENTRADA': valor2[0],
+            'BK_ENTRADA': valor2[1],
+            'FABRICA': valor2[2],
+            'ARMADOR': valor2[3],
+            'TRANSPORTADOR': valor2[4],
+            'CONTEINER': valor2[5],
+            'NOTA_FISCAL': valor2[6],
+            'ARMADOR_BOOKING_DESTINO': valor2[7],
+            'LACRE_ARMADOR': valor2[8],
+            'LACRE_PHILCO': valor2[9],
+            'PESO_BRUTO': valor2[10],
+            'PESO_LIQUIDO': valor2[11],
+            'VALOR': valor2[12],
+            'OBS': valor2[13],
+            'ISCA_1': valor2[14],
+            'ISCA_2': valor2[15],
+            'STATUS': valor2[17],
+            'DESTINO': valor2[16],
+            'DIAS_PARADOS': valor2[18],
+            'DT_SAIDA': valor2[19],
+            'USUARIO': str(user).upper(),
+            'OBS_2': valor2[20]
+        }
+        return dicionario2
+    except Exception as e:
+        print(f'erro ao obter dicionario STATUS {str(e)}')
+
+def dados_para_input_vaivem(valor: list):
     """"""
     dicionario = {
         "romaneio": str(valor[13]).upper().strip(),
@@ -99,11 +158,6 @@ from tkinter import messagebox
 
 class RecursosVisuais:
     def __init__(self):
-        self.light: ctk.CTkImage | None = None
-        self.dark: ctk.CTkImage | None = None
-        self.img_dir: pathlib.Path | None = None
-        self.adict: ctk.CTkImage | None = None
-        self.subtract: ctk.CTkImage | None = None
         self.carregar_recursos()
 
     def carregar_recursos(self):
@@ -112,18 +166,20 @@ class RecursosVisuais:
         try:
             self.img_dir = pathlib.Path(__file__).parent / 'img'
             self.img_dir.mkdir(exist_ok=True)
-            self.light = ctk.CTkImage(Image.open(self.img_dir / '2_sol.png').resize((40, 40)))
-            self.dark = ctk.CTkImage(Image.open(self.img_dir / '2_lua.png').resize((40, 40)))
-            self.adicionar = ctk.CTkImage(Image.open(self.img_dir / 'adicionar.png').resize((60, 60)))
-            self.editar = ctk.CTkImage(Image.open(self.img_dir / 'editar.png').resize((60, 60)))
-            self.liberar = ctk.CTkImage(Image.open(self.img_dir / 'liberar.png').resize((60, 60)))
-            self.sair = ctk.CTkImage(Image.open(self.img_dir / 'sair.png').resize((60, 60)))
-            self.retornar = ctk.CTkImage(Image.open(self.img_dir / 'retornar.png').resize((60, 60)))
-            self.receber = ctk.CTkImage(Image.open(self.img_dir / 'receber_veiculo.png').resize((60, 60)))
-            self.exportar = ctk.CTkImage(Image.open(self.img_dir / 'exportar.png').resize((60, 60)))
+            self.light = ctk.CTkImage(Image.open(self.img_dir / '2_sol.png'), size=(28, 28))
+            self.dark = ctk.CTkImage(Image.open(self.img_dir / '2_lua.png'), size=(28, 28))
+            self.adicionar = ctk.CTkImage(Image.open(self.img_dir / 'adicionar.png'), size=(28, 28))
+            self.editar = ctk.CTkImage(Image.open(self.img_dir / 'editar.png'), size=(28, 28))
+            self.liberar = ctk.CTkImage(Image.open(self.img_dir / 'liberar.png'), size=(28, 28))
+            self.sair = ctk.CTkImage(Image.open(self.img_dir / 'sair.png'), size=(28, 28))
+            self.retornar = ctk.CTkImage(Image.open(self.img_dir / 'retornar.png'), size=(28, 28))
+            self.receber = ctk.CTkImage(Image.open(self.img_dir / 'receber_veiculo.png'), size=(28, 28))
+            self.exportar = ctk.CTkImage(Image.open(self.img_dir / 'exportar.png'), size=(28, 28))
+            self.config = ctk.CTkImage(Image.open(self.img_dir / 'config.png'), size=(28, 28))
 
         except Exception as e:
             messagebox.showerror("Erro", f"Falha ao carregar imagens: {str(e)}")
+
             raise SystemExit(1)
 
 

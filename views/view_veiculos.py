@@ -2,31 +2,53 @@ import sqlite3
 import pandas as pd
 from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 # Caminhos de produção
 PATH_RODOVIARIO = Path(r"H:\EXPEDICAO\03 Rodoviário\03 Dados\rodoviario.db")
-PATH_CABOTAGEM = Path(r"H:\EXPEDICAO\01 Cabotagem\DADOS\1_Última versão\arquivo\philco.db")
-PATH_VAI_VEM   = Path(r'x:\x')
+PATH_CABOTAGEM  = Path(r"H:\EXPEDICAO\01 Cabotagem\DADOS\1_Última versão\arquivo\philco.db")
+PATH_VAI_VEM    = Path(r"x:\x")
 
-# Verifica se os arquivos de produção existem
-if PATH_RODOVIARIO.exists() and PATH_CABOTAGEM.exists() and PATH_VAI_VEM.exists():
+# Caminhos de teste
+TESTE_RODOVIARIO = Path(r"dados_teste\rodo\rodoviario.db")
+TESTE_CABOTAGEM  = Path(r"data\database_cabotagem.db")
+TESTE_VAI_VEM    = Path(r"data\dados.db")
+
+# Verifica se todos os arquivos de produção existem
+if all(path.exists() for path in [PATH_RODOVIARIO, PATH_CABOTAGEM, PATH_VAI_VEM]):
     BD_RODOVIARIO = PATH_RODOVIARIO
     BD_CABOTAGEM  = PATH_CABOTAGEM
-    print('✅ Programa em Produção ("Rodoviário e Cabotagem")')
+    BD_VAI_VEM    = PATH_VAI_VEM
+    print("✅ Programa em Produção (Rodoviário, Cabotagem e VaiVem)")
+    print(f"Rodoviário: {BD_RODOVIARIO}")
+    print(f"Cabotagem:  {BD_CABOTAGEM}")
+    print(f"VaiVem:     {BD_VAI_VEM}")
 else:
-    # Caminhos de teste
-    BD_RODOVIARIO = Path(r'dados_teste\rodo\rodoviario.db')
-    BD_CABOTAGEM  = Path(r'dados_teste\cabo\arquivo\philco.db')
-    BD_VAI_VEM    = Path(r'data/dados.db')
-    print('⚠️ Usando banco "Rodoviário e Cabotagem" em TESTE')
+    BD_RODOVIARIO = TESTE_RODOVIARIO
+    BD_CABOTAGEM  = TESTE_CABOTAGEM
+    BD_VAI_VEM    = TESTE_VAI_VEM
+    print("⚠️ Usando banco em TESTE (Rodoviário, Cabotagem e VaiVem)")
+    print(f"Rodoviário: {BD_RODOVIARIO}")
+    print(f"Cabotagem:  {BD_CABOTAGEM}")
+    print(f"VaiVem:     {BD_VAI_VEM}")
 
 
 def veiculos_cabotagem():
     with sqlite3.connect(BD_CABOTAGEM) as conn:
         query = 'SELECT * FROM BASE'  
         tabela_completa = pd.read_sql_query(query, conn)
-        tabela_para_sheet = tabela_completa.iloc[:, [1, 2, 3, 4, 5, 6, 17]]
+        tabela_para_sheet = tabela_completa.iloc[:, [1, 2, 3, 4, 5, 6, 7, 17]]
         tabela_para_sheet = tabela_para_sheet[~tabela_para_sheet['STATUS'].isin(['SAIU', 'LIBERADO'])]
+
+        tabela_para_sheet['DT_ENTRADA'] = pd.to_datetime(tabela_para_sheet['DT_ENTRADA'], errors='coerce')
+        # 2️⃣ Obter a data de hoje (sem horário)
+        hoje = pd.Timestamp(datetime.now().date())
+
+        # 3️⃣ Criar a coluna com a diferença em dias
+        tabela_para_sheet['DIAS'] = (hoje - tabela_para_sheet['DT_ENTRADA']).dt.days
+        tabela_para_sheet['DT_ENTRADA'] = tabela_para_sheet['DT_ENTRADA'].dt.strftime('%d/%m/%Y')
+
+
         return tabela_completa, tabela_para_sheet
 
 
@@ -105,5 +127,5 @@ def filtro(consulta: str, tipo_veiculo: str):
 
 
 if __name__ =="__main__":
-    completa, psheet = veiculos_cabotagem()
-    print(psheet)
+    carreta, conteiner = tipos_veiculo()
+    print(f'{carreta}, \n\n\n\n {conteiner}')
