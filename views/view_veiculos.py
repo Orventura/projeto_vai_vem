@@ -86,6 +86,23 @@ def tipos_veiculo():
 
     return tabela_conteineres, tabela_carretas
 
+def filtrar_veiculo(tipo_veiculo: str, pesquisa: str):
+    conteiner_df, carreta_df = tipos_veiculo()
+    pesquisa = str(pesquisa).strip()  # Garante que é string e remove espaços extras
+
+    if tipo_veiculo == 'Carreta':
+        # Busca em todas as colunas da carreta_df
+        resultado = carreta_df[carreta_df.apply(lambda row: row.astype(str).str.contains(pesquisa, case=False, na=False).any(), axis=1)]
+
+    elif tipo_veiculo == 'Conteiner':
+        # Busca em todas as colunas da conteiner_df
+        resultado = conteiner_df[conteiner_df.apply(lambda row: row.astype(str).str.contains(pesquisa, case=False, na=False).any(), axis=1)]
+
+    else:
+        resultado = pd.DataFrame()  # Retorna vazio se tipo não reconhecido
+
+    return resultado
+
 
 def filtro(consulta: str, tipo_veiculo: str):
     """Retorna o veículo filtrado no Sheet.veiculos da janela entrada"""

@@ -27,8 +27,9 @@ class BancoDeDados:
             segmento TEXT,
             data1 DATE,                -- Data da saída
             transportadora TEXT,
-            frota_cntr TEXT,
-            placa TEXT,
+            tipo_veiculo,
+            placa_cntr TEXT,
+            frota TEXT,
             lacre TEXT,
             origem TEXT,
             destino TEXT,
@@ -63,8 +64,37 @@ class BancoDeDados:
         novo_id2 = ultimo_id2 + 1
         return novo_id2
 
-    
-    def inserir_dado(self, valores: tuple):
+    def inserir_dado(self, **dados):
+        """
+        Insere dados na tabela vaivem usando um dicionário como entrada.
+        """
+        try:
+            if not dados:
+                raise ValueError("Nenhum dado foi fornecido para inserção na tabela vaivem.")
+
+            # Gera os nomes das colunas e os placeholders
+            colunas = ', '.join(dados.keys())
+            placeholders = ', '.join('?' for _ in dados)
+            valores = tuple(dados.values())
+
+            sql = f"""
+            INSERT INTO vaivem (
+                {colunas}
+            ) VALUES (
+                {placeholders}
+            )
+            """
+
+            cursor = self.conn.cursor()
+            cursor.execute(sql, valores)
+            self.conn.commit()
+            print(f"Registro inserido com sucesso. ID: {cursor.lastrowid}")
+            return cursor.lastrowid
+
+        except sqlite3.Error as e:
+            raise ValueError(f"Erro ao inserir na tabela vaivem: {e}")    
+        
+    def inserir_dado_antigo(self, valores: tuple):
         sql = """
         INSERT INTO vaivem (
             id_2,romaneio1, segmento, data1, transportadora, frota_cntr, placa, lacre,
@@ -87,6 +117,7 @@ class BancoDeDados:
     def __exit__(self, tipo, valor, traceback):
         self.conn.close()
         print(f"Conexão com o banco '{self.caminho_banco.name}' encerrada.")
+
 
     def receber_in_sql(self, id2: int, lista: list):
         """

@@ -78,7 +78,7 @@ def vai_vem_pendente():
                     'STATUS'
                     ]
 
-        tabela = tabela[['dias_parado', 'romaneio1', 'lacre', 'id_2', 'frota_cntr', 'placa', 'transportadora', 'data1', 'conferente1', 'origem', 'destino', 'turno', 'item', 'desc', 'quantidade', 'motivo', 'justificativa', 'status']]
+        tabela = tabela[['dias_parado', 'romaneio1', 'lacre', 'id_2', 'placa_cntr', 'frota', 'transportadora', 'data1', 'conferente1', 'origem', 'destino', 'turno', 'item', 'desc', 'quantidade', 'motivo', 'justificativa', 'status']]
     return tabela, colunas_sheet
 
 import sqlite3

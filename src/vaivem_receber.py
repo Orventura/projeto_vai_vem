@@ -26,7 +26,7 @@ class Recebimento:
         self.frame.place(x=210, y=5)
 
         # Frame para a tabela
-        self.frame_tabela = ctk.CTkFrame(self.frame, width=780, height=440, fg_color='red')
+        self.frame_tabela = ctk.CTkFrame(self.frame, width=780, height=440, fg_color='transparent')
         self.frame_tabela.place(x=5, y=2)
 
             #"frame_5": {"x": 0, "y": 412, "width": 598, "height": 37},
@@ -108,6 +108,7 @@ class Recebimento:
         )
         self.sheet.enable_bindings()
         self.sheet.change_theme('dark' if self.modo_atual == 'Dark' else 'light_blue')
+        self.sheet.set_all_column_widths()
         self.sheet.place(x=3, y=3)
 
     def atualizar_tabelas(self):
@@ -135,7 +136,7 @@ class Recebimento:
             reset_col_positions=True,
             reset_row_positions=True
         )
-        self.sheet.headers(list(df.columns))
+        self.sheet.headers(self.colunas)
         self.sheet.deselect("all")
         self.sheet.set_all_column_widths()
 

@@ -1,12 +1,10 @@
 import customtkinter as ctk
 from views.view_veiculos import tipos_veiculo, filtro
 from utils.config import *
-from utils.config import dados_para_input_vaivem as dados_para_input
 import pandas as pd
 from datetime import datetime
 from tkinter import messagebox
 from src.bd import BancoDeDados
-
 
 class Entradas:
     def __init__(self, root):
@@ -18,12 +16,8 @@ class Entradas:
         self.data = None
         self.status = None        
         self.sheet_produtos = None 
-        self.df_conteiners, self.df_carretas = tipos_veiculo()
-        self.veiculo = 'Carreta'
-
 
     def _criar_janela_entradas(self, root):
-        self.sheet_veiculos = None
 
         self.modo_atual = ctk.get_appearance_mode()
 
@@ -34,27 +28,25 @@ class Entradas:
             for name, cfg in subframes.items():
                 self.frames[name] = ctk.CTkFrame(
                     self.e_frame,
-                    fg_color='transparent',
+                    #fg_color='white',
                     width=cfg["width"],
                     height=cfg["height"],
                     #border_color='black',
-                    #border_width=1
+                    border_width=1
                 )
                 self.frames[name].place(x=cfg["x"], y=cfg["y"])
 
-            self.frame_tabela = ctk.CTkFrame(self.frames['frame_4'],width=600, height=150, border_width=1)
-            self.frame_tabela.place(x=90, y=82)
             # Widgets do frame_1
 
             self.atualizar_data_status()
 
-            self.e_tipo_veiculo = ctk.CTkSegmentedButton(self.frames['frame_1'], values=["Conteiner", "Carreta"])
+            self.e_tipo_veiculo = ctk.CTkSegmentedButton(self.frames['frame_1'], values=["Conteiner", "Carreta"], command=lambda x: self.carregar_sheet(),)
             self.e_tipo_veiculo.place(x=33, y=10)
-            self.e_tipo_veiculo.set(self.veiculo)
+            self.e_tipo_veiculo.set('Carreta')
 
             self.e_id_veiculo = CustomEntry(self.frames['frame_1'], placeholder_text='Placa / Nº Conteiner', width=130)
             self.e_id_veiculo.place(x=30, y=40)
-            self.e_id_veiculo.bind("<KeyRelease>", print('Trocar para função'))
+            self.e_id_veiculo.bind("<KeyRelease>", self.filtrar_sheet)
 
             self.e_transportadora_original_text = 'Transportadora'
             self.e_transportadora = CustomLabel(self.frames['frame_1'],width=130, text=self.e_transportadora_original_text,anchor='w')
@@ -92,10 +84,14 @@ class Entradas:
             self.e_turno.set('Turno')
             self.e_turno.place(x=30, y=70)
 
+
             self.e_conferente = CustomEntry(self.frames['frame_3'], placeholder_text='Conferente', width=140)
             self.e_conferente.place(x=30, y=100)
             
             # Widgets do frame_4
+
+            self.frame_tabela = ctk.CTkFrame(self.frames['frame_4'],width=580, height=150, border_width=1)
+            self.frame_tabela.place(x=90, y=82)
 
             self.e_item = CustomEntry(self.frames['frame_4'], placeholder_text='* Item', width=80)
             self.e_item.place(x=90, y=10)
@@ -132,21 +128,19 @@ class Entradas:
 
             self.sheet_veiculos = CustomSheet(
                 self.frame_tabela,
-                set_all_heights_and_widths=True,
-                header_align = "w",
                 data=[],
                 headers=[],
+                set_all_heights_and_widths=True,
+                header_align = "w",
                 show_row_index=True,
                 show_x_scrollbar=True,
                 show_y_scrollbar=True,
-                width=765,
-                height=130
+                width=565,
+                height=140
             )
             self.sheet_veiculos.enable_bindings()
-        
+
             self.carregar_sheet()
-
-
             self.sheet_veiculos.change_theme('dark' if self.modo_atual == 'Dark' else 'light_blue')
 
             # alteração4: bind para preencher Transportadora
@@ -163,110 +157,74 @@ class Entradas:
         self.data = ctk.StringVar(master=self.frames['frame_1'], value=self.dt_atual)
         self.status = ctk.StringVar(master=self.frames['frame_1'], value=self.status_inicial)
 
-    def atualizar_veiculo(self):
-        veiculo = self.e_tipo_veiculo.get()
-        if veiculo == "Carreta":
-            self.veiculo == "Conteiner"
-        else:
-            self.veiculo == "Carreta"
-        return self.veiculo
+    def filtrar_sheet(self, event=None):
+
+        texto = self.e_id_veiculo.get().strip()
+        tipo = self.e_tipo_veiculo.get().strip()
+
+        # Carrega todo o DataFrame do banco
+        df = filtro("", tipo)    # Passamos "" para não filtrar no SQL
+
+        # Se há texto, filtra localmente no pandas
+        if texto:
+            mask = df.apply(lambda col: col.astype(str).str.contains(texto, case=False, na=False))
+            df = df[mask.any(axis=1)]
+
+        # Atualiza o sheet
+        self.sheet_veiculos.set_sheet_data(df.values.tolist(),
+                                           reset_col_positions=True,
+                                           reset_row_positions=True)
+        self.sheet_veiculos.headers(list(df.columns))
+        self.sheet_veiculos.deselect("all")
 
     def carregar_sheet(self):
         # Se o sheet foi destruído, recria
-        
-        tipo = self.atualizar_veiculo()
+       
         if self.sheet_veiculos == None:
-            self.df_veiculo = self.df_carretas if tipo == "Carreta" else self.df_conteiners
-            tipo = self.e_tipo_veiculo.get().strip()
+            self.atualizar_data_status()
             self.sheet_veiculos = CustomSheet(
                 self.frame_tabela,
-                width=765,
-                height=142,
-                
-                headers=list(self.df_veiculo.columns),
+                data=[],
+                headers=[],
                 set_all_heights_and_widths=True,
                 show_row_index=True,
                 show_x_scrollbar=True,
                 show_y_scrollbar=True,
-                self.sheet_veiculos.set_sheet_data(self.df_veiculo.values.tolist(), reset_col_positions=True, reset_row_positions=True),
+                width=525,
+                height=113
             )
-            print(f'DEBUG CARREGAR SHEET - TABELA VEICULO {self.df_veiculo}')
             self.sheet_veiculos.enable_bindings()
             self.sheet_veiculos.extra_bindings([
                 ("row_select", self.preencher)
             ])
         self.sheet_veiculos.change_theme('dark' if self.modo_atual == 'Dark' else 'light_blue')
-        self.sheet_veiculos.place(x=3, y=3)
 
 
+        self.sheet_veiculos.deselect("all")
+        self.limpar_id_veiculos()
 
-#    def filtrar_sheet(self, event=None):
-#        texto = self.e_id_veiculo.get().strip()
-#        tipo = self.e_tipo_veiculo.get().strip()
-#
-#        # Carrega todo o DataFrame do banco
-#        df = filtro("", tipo)    # Passamos "" para não filtrar no SQL
-#
-#        # Se há texto, filtra localmente no pandas
-#        if texto:
-#            mask = df.apply(lambda col: col.astype(str).str.contains(texto, case=False, na=False))
-#            df = df[mask.any(axis=1)]
-#
-#        # Atualiza o sheet
-#        self.sheet_veiculos.set_sheet_data(df.values.tolist(),
-#                                           reset_col_positions=True,
-#                                           reset_row_positions=True)
-#        self.sheet_veiculos.headers(list(df.columns))
-#        self.sheet_veiculos.deselect("all")
-#
-#
-#        self.sheet_veiculos.deselect("all")
-#        self.limpar_id_veiculos()
-#
-#
-#        tipo = self.e_tipo_veiculo.get()
-#        
-#        self.df_veiculo = self.df_carretas if tipo == "Carreta" else self.df_conteiners
-#        if self.sheet_veiculos != None:
-#            self.sheet_veiculos.set_sheet_data(self.df_veiculo.values.tolist(), reset_col_positions=True, reset_row_positions=True)
-#        self.sheet_veiculos.headers(list(self.df_veiculo.columns))
-#        self.sheet_veiculos.place(x=10, y=5)
-#        self.sheet_veiculos.change_theme('dark' if self.modo_atual == 'Dark' else 'light_blue')
+        conteiners, carretas = tipos_veiculo()
+        tipo = self.e_tipo_veiculo.get()
+        self.df_veiculo = carretas if tipo == "Carreta" else conteiners
 
-#    def filtrar_sheet2(self, event=None):
-#        texto = self.e_id_veiculo.get().strip()
-#        tipo = self.e_tipo_veiculo.get().strip()
-#
-#        # Carrega o DataFrame completo
-#        df = filtro("", tipo)
-#
-#        # Aplica filtro local se houver texto
-#        if texto:
-#            mask = df.apply(lambda col: col.astype(str).str.contains(texto, case=False, na=False))
-#            df = df[mask.any(axis=1)]
-#
-#        # Atualiza o sheet com o DataFrame filtrado
-#        self.sheet_veiculos.data(df.values.tolist(),
-#                                           reset_col_positions=True,
-#                                           reset_row_positions=True)
-#        self.sheet_veiculos.headers(list(df.columns))
-#        self.sheet_veiculos.deselect("all")
-#        self.sheet_veiculos.place(x=10, y=5)
-#        self.sheet_veiculos.change_theme('dark' if self.modo_atual == 'Dark' else 'light_blue')
-#
-#        # Atualiza self.df_veiculo apenas se não houver texto (modo padrão)
-#        if not texto:
-#            self.df_veiculo = self.df_carretas if tipo == "Carreta" else self.df_conteiners
-#
-#
-#            if self.sheet_produtos == None:
-#                pass
-#            else:
-#                self.limpar_sheet(self.sheet_produtos)
-#                self.sheet_produtos.destroy()
-#                self.sheet_produtos = None
+        self.sheet_veiculos.set_sheet_data(self.df_veiculo.values.tolist(), reset_col_positions=True, reset_row_positions=True)
+        self.sheet_veiculos.headers(list(self.df_veiculo.columns))
+        self.sheet_veiculos.place(x=10, y=5)
+        self.sheet_veiculos.change_theme('dark' if self.modo_atual == 'Dark' else 'light_blue')
+        
+
+        if self.sheet_produtos == None:
+            pass
+        else:
+            self.limpar_sheet(self.sheet_produtos)
+            self.sheet_produtos.destroy()
+            self.sheet_produtos = None
     
     def mostrar_sheet_produtos(self):
+        if self.sheet_produtos:
+            self.sheet_produtos.destroy()
+            self.sheet_produtos = None
+
         if self.sheet_produtos == None:
             self.sheet_produtos = CustomSheet(
             self.frame_tabela,
@@ -290,11 +248,6 @@ class Entradas:
             return []  # Nenhuma sheet criada ainda
         # get_sheet_data retorna lista de listas (cada linha)
         return self.sheet_produtos.get_sheet_data()
-
-    def atualiza_data_frames(self):
-        conteiners, carretas = tipos_veiculo()
-        return conteiners, carretas
-
 
     def adicionar_produto(self):
         # coleta valores
@@ -375,7 +328,7 @@ class Entradas:
             pass
 
     def limpar_id_veiculos(self):
-        self.e_id_veiculo.delete(0, "end")
+        self.e_id_veiculo.delete(0, "END")
         self.e_frota.configure(text='Frota')
         self.e_transportadora.configure(text='Transportadora')  
 
@@ -405,7 +358,7 @@ class Entradas:
                 frota, transportadora, id_veiculo, = dados_linha
 
             self.e_transportadora.configure(text=transportadora)
-            self.e_id_veiculo.delete(0, "end")
+            self.e_id_veiculo.delete(0, "END")
             self.e_id_veiculo.insert(0, id_veiculo)
             self.e_frota.configure(text=frota)
             self.esconder_sheet_veiculos()
@@ -504,31 +457,31 @@ class Entradas:
             # 5️⃣ Converte os dados para lista de dicionários
             self.dados_finais = [
                 (
-                    dados_para_input(linha)['romaneio'],
-                    dados_para_input(linha)['segmento'],
-                    dados_para_input(linha)['data'],
-                    dados_para_input(linha)['transportadora'],
-                    dados_para_input(linha)['placa_num_conteiner'],
-                    dados_para_input(linha)['frota'],
-                    dados_para_input(linha)['lacre'],
-                    dados_para_input(linha)['galpao_origem'],
-                    dados_para_input(linha)['galpao_destino'],
-                    dados_para_input(linha)['turno'],
-                    dados_para_input(linha)['conferente'],
-                    dados_para_input(linha)['localizacao'],
-                    dados_para_input(linha)['item'],
-                    dados_para_input(linha)['descricao'],
-                    dados_para_input(linha)['quantidade'],
-                    dados_para_input(linha)['nf'],
-                    dados_para_input(linha)['motivo'],
-                    dados_para_input(linha)['justificativa'],
-                    dados_para_input(linha)['status'],
-                    dados_para_input(linha)['conferente2'],
-                    dados_para_input(linha)['romaneio2'],
-                    dados_para_input(linha)['data2'],
-                    dados_para_input(linha)['end_user'],
-                    dados_para_input(linha)['final_hour'],
-                    dados_para_input(linha)['pc']
+                    dados_para_input_vaivem(linha)['romaneio'],
+                    dados_para_input_vaivem(linha)['segmento'],
+                    dados_para_input_vaivem(linha)['data'],
+                    dados_para_input_vaivem(linha)['transportadora'],
+                    dados_para_input_vaivem(linha)['placa_num_conteiner'],
+                    dados_para_input_vaivem(linha)['frota'],
+                    dados_para_input_vaivem(linha)['lacre'],
+                    dados_para_input_vaivem(linha)['galpao_origem'],
+                    dados_para_input_vaivem(linha)['galpao_destino'],
+                    dados_para_input_vaivem(linha)['turno'],
+                    dados_para_input_vaivem(linha)['conferente'],
+                    dados_para_input_vaivem(linha)['localizacao'],
+                    dados_para_input_vaivem(linha)['item'],
+                    dados_para_input_vaivem(linha)['descricao'],
+                    dados_para_input_vaivem(linha)['quantidade'],
+                    dados_para_input_vaivem(linha)['nf'],
+                    dados_para_input_vaivem(linha)['motivo'],
+                    dados_para_input_vaivem(linha)['justificativa'],
+                    dados_para_input_vaivem(linha)['status'],
+                    dados_para_input_vaivem(linha)['conferente2'],
+                    dados_para_input_vaivem(linha)['romaneio2'],
+                    dados_para_input_vaivem(linha)['data2'],
+                    dados_para_input_vaivem(linha)['end_user'],
+                    dados_para_input_vaivem(linha)['final_hour'],
+                    dados_para_input_vaivem(linha)['pc']
                 )
                 for linha in self.dados
             ]
@@ -613,4 +566,3 @@ class Entradas:
         '''Mostra o frame de entradas.'''
         self._criar_janela_entradas(self.root)
         self.e_frame.place(x=210, y=5)
-

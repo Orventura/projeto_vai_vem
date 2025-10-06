@@ -200,5 +200,5 @@ if __name__ == '__main__':
     root = ctk.CTk()
     root.title("teste_cabotagem")
     root.geometry('815x460')
-    app = Cabotagem(root)
+    app = Rodoviario(root)
     root.mainloop()
