@@ -6,11 +6,12 @@ import getpass
 import platform
 from datetime import datetime
 from src.cab_entrada import FormularioEntrada
-from src.cab_editar import EditarStatus
-from src.cab_liberar import Liberacao
+from src.modal_cab_editar import EditarStatus
+from src.modal_cab_liberar import Liberacao
+from src.modal_cab_config import ModalConfiguracoes
 
 from views.view_veiculos import veiculos_cabotagem
-#from src.bd import BancoDeDados
+from src.bd import BancoDeDados
 
 class Cabotagem:
     def __init__(self, root):
@@ -31,7 +32,7 @@ class Cabotagem:
         self.frame = ctk.CTkFrame(self.root, width=783, height=450)
         self.frame.place(x=210, y=5)
 
-        self.frame_inferior = ctk.CTkFrame(self.frame, width=598, height=37, fg_color='transparent')
+        self.frame_inferior = ctk.CTkFrame(self.frame, width=700, height=37, fg_color='transparent')
         self.mostrar_frame_inferior()
 
         self.label_hover = ctk.CTkLabel(self.frame_inferior, text="", font=("Arial", 12), text_color='darkgray', width=50, height=37)
@@ -44,6 +45,7 @@ class Cabotagem:
             "Liberar Veículo": {"imagem": self.img.liberar, "comando": lambda: self.abrir_liberacao()},
             "Registrar Saída": {"imagem": self.img.sair, "comando": lambda: print("Sair")},
             "Retornar Veículo": {"imagem": self.img.retornar, "comando": lambda: print("Retornar")},
+            "Configurações": {"imagem": self.img.config, "comando": lambda: self.abrir_configuracoes()}
         }
 
         self.criar_botoes()
@@ -151,6 +153,7 @@ class Cabotagem:
     def abrir_editar_status(self, root):
         try:
             selecionados = self.sheet.get_currently_selected()
+            print('Debug selecionados', selecionados)
             if not selecionados:
                 messagebox.showerror(
                     "Erro de Seleção",
@@ -160,8 +163,9 @@ class Cabotagem:
             # Captura a linha e os dados
             linha = selecionados[0]
             dados_linha = self.sheet.get_row_data(linha)
-
-            self.formulario = EditarStatus(root, dados_linha, 'Banco.bd',    ['PHILCO 1', 'PHILCO 2'], ['VAZIO', 'CHEIO'])
+            print(dados_linha)
+            
+            self.formulario = EditarStatus(root, dados_linha, r'data\database_cabotagem.db', ['PHILCO 1', 'PHILCO 2'], ['VAZIO', 'CHEIO'], 'dados_linha[8]')
             self.formulario.grab_set()
             self.formulario.focus_force()
         except Exception as e:
@@ -183,14 +187,19 @@ class Cabotagem:
             app = Liberacao(
             master=self.root,
             conteiner=dados_linha,
-            bd_path='pathdb',
+            bd_path=r'data\database_cabotagem.db',
             lista_fabrica=['PHILCO 1', 'PHILCO 2'],
             lista_status=['VAZIO', 'CHEIO'],
             lista_booking_retirada=['BSR1505551', 'BRASDFASF', 'BRAASDFD555'],
-            lista_destino=['ITAPOA - SC', 'LINHARES - ES']
+            lista_destino=['ITAPOA - SC', 'LINHARES - ES'],
+            #destino=dados_linha[8]
             )
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao tentar obter os dados do veículo:\n{e}")
+
+    def abrir_configuracoes(self):
+        """Abre o modal de configurações da view cabotagem"""
+        self.config = ModalConfiguracoes(self.root)
 
     def fechar_formulario(self):
         if hasattr(self, 'formulario') and self.formulario.winfo_exists():

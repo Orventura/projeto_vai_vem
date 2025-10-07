@@ -502,7 +502,7 @@ class Entradas:
                             
                         messagebox.showinfo(
                             "📦 Operação Concluída",
-                            "🚚 Todos os veículos foram gravados com sucesso no sistema!"
+                            "🚚 Todos os dados foram gravados com sucesso no sistema!"
                         )
                         self.limpar_widgets()
                         self.e_turno.set('Turno')

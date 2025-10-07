@@ -17,6 +17,7 @@ class EditarStatus(ctk.CTkToplevel):
         self.bd_path = bd_path
         self.lista_fabrica = lista_fabrica
         self.lista_status = lista_status
+        self.destino = destino
         self.widgets = {}
 
         #self._carregar_dados()
@@ -41,9 +42,10 @@ class EditarStatus(ctk.CTkToplevel):
 
         # Campos editáveis
         campos_editaveis = [
-            ("Qual a Fabrica?", "combo", self.lista_fabrica),
-            ("Qual o novo status?", "combo", self.lista_status),
-            ("Observação 2:", "entry")
+            ("Fabrica", "combo", self.lista_fabrica),
+            ("Status", "combo", self.lista_status),
+            ('Destino', 'combo', self.destino),
+            ("Observação 2", "entry")
         ]
 
         for i, (texto, tipo, *opcoes) in enumerate(campos_editaveis, start=len(self.dados_cntr)):

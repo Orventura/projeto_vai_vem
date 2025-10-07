@@ -10,7 +10,7 @@ PATH_CABOTAGEM  = Path(r"H:\EXPEDICAO\01 Cabotagem\DADOS\1_Última versão\arqui
 PATH_VAI_VEM    = Path(r"x:\x")
 
 # Caminhos de teste
-TESTE_RODOVIARIO = Path(r"dados_teste\rodo\rodoviario.db")
+TESTE_RODOVIARIO = Path(r"data\rodoviario.db")
 TESTE_CABOTAGEM  = Path(r"data\database_cabotagem.db")
 TESTE_VAI_VEM    = Path(r"data\dados.db")
 
@@ -37,7 +37,7 @@ def veiculos_cabotagem():
     with sqlite3.connect(BD_CABOTAGEM) as conn:
         query = 'SELECT * FROM BASE'  
         tabela_completa = pd.read_sql_query(query, conn)
-        tabela_para_sheet = tabela_completa.iloc[:, [1, 2, 3, 4, 5, 6, 7, 17]]
+        tabela_para_sheet = tabela_completa.iloc[:, [1, 2, 3, 4, 5, 6, 7, 17,18]]
         tabela_para_sheet = tabela_para_sheet[~tabela_para_sheet['STATUS'].isin(['SAIU', 'LIBERADO'])]
 
         tabela_para_sheet['DT_ENTRADA'] = pd.to_datetime(tabela_para_sheet['DT_ENTRADA'], errors='coerce')

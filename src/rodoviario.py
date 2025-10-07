@@ -6,8 +6,8 @@ import getpass
 import platform
 from datetime import datetime
 from src.cab_entrada import FormularioEntrada
-from src.cab_editar import EditarStatus
-from src.cab_liberar import Liberacao
+from src.modal_cab_editar import EditarStatus
+from src.modal_cab_liberar import Liberacao
 
 from views.view_veiculos import veiculos_cabotagem
 #from src.bd import BancoDeDados
@@ -19,9 +19,9 @@ class Rodoviario:
 
         self.frame = None
         #self.sheet = None
-        self._criar_cabotagem()
+        #self._criar_cabotagem()
 
-        self.carregar_sheet()
+        #self.carregar_sheet()
 
     def _criar_cabotagem(self):
         self.modo_atual = ctk.get_appearance_mode()
