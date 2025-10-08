@@ -1,39 +1,10 @@
+from utils.config import *
 import sqlite3
-import pandas as pd
-from pathlib import Path
-from datetime import datetime
-from pathlib import Path
 
-# Caminhos de produção
-PATH_RODOVIARIO = Path(r"H:\EXPEDICAO\03 Rodoviário\03 Dados\rodoviario.db")
-PATH_CABOTAGEM  = Path(r"H:\EXPEDICAO\01 Cabotagem\DADOS\1_Última versão\arquivo\philco.db")
-PATH_VAI_VEM    = Path(r"x:\x")
-
-# Caminhos de teste
-TESTE_RODOVIARIO = Path(r"data\rodoviario.db")
-TESTE_CABOTAGEM  = Path(r"data\database_cabotagem.db")
-TESTE_VAI_VEM    = Path(r"data\dados.db")
-
-# Verifica se todos os arquivos de produção existem
-if all(path.exists() for path in [PATH_RODOVIARIO, PATH_CABOTAGEM, PATH_VAI_VEM]):
-    BD_RODOVIARIO = PATH_RODOVIARIO
-    BD_CABOTAGEM  = PATH_CABOTAGEM
-    BD_VAI_VEM    = PATH_VAI_VEM
-    print("✅ Programa em Produção (Rodoviário, Cabotagem e VaiVem)")
-    print(f"Rodoviário: {BD_RODOVIARIO}")
-    print(f"Cabotagem:  {BD_CABOTAGEM}")
-    print(f"VaiVem:     {BD_VAI_VEM}")
-else:
-    BD_RODOVIARIO = TESTE_RODOVIARIO
-    BD_CABOTAGEM  = TESTE_CABOTAGEM
-    BD_VAI_VEM    = TESTE_VAI_VEM
-    print("⚠️ Usando banco em TESTE (Rodoviário, Cabotagem e VaiVem)")
-    print(f"Rodoviário: {BD_RODOVIARIO}")
-    print(f"Cabotagem:  {BD_CABOTAGEM}")
-    print(f"VaiVem:     {BD_VAI_VEM}")
 
 
 def veiculos_cabotagem():
+    """Retorna do banco de dados uma lista """
     with sqlite3.connect(BD_CABOTAGEM) as conn:
         query = 'SELECT * FROM BASE'  
         tabela_completa = pd.read_sql_query(query, conn)

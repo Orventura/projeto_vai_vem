@@ -2,20 +2,7 @@ import sqlite3
 import pandas as pd
 from pathlib import Path
 import datetime as dt
-
-# Caminhos de produção
-PATH_VAI_VEM   = Path(r"H:\Departamental\EXPEDICAO")
-
-# Verifica se os arquivos de produção existem
-if PATH_VAI_VEM.exists():
-    BD_VAI_VEM = PATH_VAI_VEM
-    print('✅ Programa em Produção (banco: vaivem)')
-else:
-    # Caminhos de teste
-    BD_VAI_VEM    = Path('data/dados.db')
-    print('⚠️ Usando banco ´vaivem´ em TESTE')
-
-
+from utils.config import *
 
 def vai_vem():
     """Retorna todos os registros de vai vem"""

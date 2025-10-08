@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from views.view_veiculos import tipos_veiculo, filtro, filtrar_veiculo
+from models.view_veiculos import tipos_veiculo, filtro, filtrar_veiculo
 from utils.config import *
 from utils.config import dados_para_input_vaivem as dados_para_input
 import pandas as pd

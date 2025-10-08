@@ -3,10 +3,10 @@ import customtkinter as ctk
 from utils.config import *
 from src.vaivem_embarcar import Entradas
 from src.vaivem_receber import Recebimento
-from src.cab_entrada import FormularioEntrada
+from src.modal_cab_entrada import FormularioEntrada
 from src.cabotagem import Cabotagem
 from src.rodoviario import Rodoviario
-from src.cab_entrada import FormularioEntrada
+from src.modal_cab_entrada import FormularioEntrada
 
 
 class JanelaPrincipal:

@@ -6,10 +6,10 @@ from utils.config import *
 from datetime import datetime
 from src.bd_cabotagem import Database
 import getpass
-
+from models.views_cab_config import Listas
 
 class FormularioEntrada(ctk.CTkToplevel):
-    def __init__(self, master=None, on_close=None):
+    def __init__(self, master=None, listas=None, on_close=None):
 
         super().__init__(master)
         self.on_close = on_close
@@ -17,6 +17,14 @@ class FormularioEntrada(ctk.CTkToplevel):
         self.resizable(False, False)
         self.grab_set()        # Torna modal
         self.focus_force()     # Foco na janela
+        self.dicionario_listas = self._carregar_listas()
+        self.lista_fabrica = self.dicionario_listas['fabrica']
+        self.lista_armador = self.dicionario_listas['armador']
+        self.lista_situacao = self.dicionario_listas['situacao']
+        self.usuarios_autorizados = self.dicionario_listas['user_auth']
+        self.lista_destino = self.dicionario_listas['destino']
+        self.lista_transportador = self.dicionario_listas['transportador']
+
 
         self.img = RecursosVisuais()
 
@@ -25,12 +33,12 @@ class FormularioEntrada(ctk.CTkToplevel):
         self._campos = [
             ("Data:", "date"),
             ("Booking de entrada:", "entry"),
-            ("Fabrica:", "combo", ['PHILCO 1', 'PHILCO 2']),
-            ("Armador:", "combo", ['ALIANÇA', 'LOGIN', 'MERCOSUL']),
-            ("Transportador:", "combo", ['1', '2', '3', '4', '5']),
+            ("Fabrica:", "combo", self.lista_fabrica),
+            ("Armador:", "combo", self.lista_armador),
+            ("Transportador:", "combo", self.lista_transportador),
             ("Conteiner:", "entry"),
-            ("Destino:", "combo", ['SC', 'ES', 'RJ']), 
-            ("Status:", "combo", ['VAZIO', 'CHEIO']),
+            ("Destino:", "combo", self.lista_destino), 
+            ("Status:", "combo", self.lista_situacao),
         ]
 
         self._criar_campos()
@@ -112,6 +120,13 @@ class FormularioEntrada(ctk.CTkToplevel):
 
         except Exception as e:
             messagebox.showerror('Erro', str(e))
+
+    def _carregar_listas(self):
+        """Retorna dicionario, para carregar todas as listas de combobox"""
+        with Listas() as users:
+            dicionario = users.dicionario_de_listas()
+            return dicionario
+    
 
 if __name__ == "__main__":
     ctk.set_appearance_mode("dark")

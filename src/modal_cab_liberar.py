@@ -1,128 +1,125 @@
 import customtkinter as ctk
 from tkinter import messagebox
 import sqlite3 as lite
+from utils.config import CustomButton, CustomEntry, CustomLabel, CustomComboBox
+from models.views_cab_config import Listas
 
 class Liberacao(ctk.CTkToplevel):
-    def __init__(self, master, conteiner, bd_path, lista_fabrica, lista_status, lista_booking_retirada, lista_destino):
+    """Cria um modal para liberar os veículos,
+    recebe o master_widget, lista dos dados selecionados, indice dos
+    dados selecionados na sheet prinsipal, caminho do banco de dados."""
+    def __init__(self, master, lista: list, id, bd_path):
+
         super().__init__(master)
         self.title("REGISTRAR LIBERAÇÃO")
-        self.resizable(False, False)
+        #self.resizable(False, False)
         self.grab_set()
         self.focus_force()
-
-        self.conteiner = conteiner
+        self.id = id
+        self.lista_dados = lista
+        self.conteiner = lista[1]
         self.bd_path = bd_path
-        self.lista_fabrica = lista_fabrica
-        self.lista_status = lista_status
-        self.lista_booking_retirada = lista_booking_retirada
-        self.lista_destino = lista_destino
+        self.dicionario_listas = self._carregar_listas()
+        self.lista_fabrica = self.dicionario_listas['fabrica']
+        self.lista_booking = self.dicionario_listas['booking']
+
+        #self.on_close = on_close
+        
+
         self.widgets = {}
 
-        self._carregar_dados()
-        self._criar_layout()
-        self._criar_campos()
-        self._criar_botao()
+        self.frame_principal = ctk.CTkFrame(self, width=800, height=500, fg_color='transparent')
+        self.frame_principal.pack(fill='both', side='bottom', padx=5, pady=5, expand=True)
+        self.frame_principal.pack_propagate(True)
 
-    def _carregar_dados(self):
-        conexao = lite.connect(self.bd_path)
-        cursor = conexao.cursor()
-        cursor.execute("SELECT * FROM BASE WHERE CONTEINER = ?", (self.conteiner,))
-        resultado = cursor.fetchone()
-        conexao.close()
+        self.frame_cabecalho = ctk.CTkFrame(self, width=800, height=100,)
+        self.frame_cabecalho.pack(fill=None, side='top', padx=5, pady=(5, 0), expand=True,)
+        self.label_cabecalho = ctk.CTkLabel(self.frame_cabecalho, text_color='gray',
+                                            text="CONTEINER     -      ARMADOR      -      TRANSPORTADORA",
+                                            font=('arial', 20, 'bold')
+                                            
+                                            )
+        self.label_cabecalho.pack(pady= 5, ipadx=10)
+        self.label_cabecalho2 = ctk.CTkLabel(self.frame_cabecalho, text_color='gray',
+                                            text="CONTEINER     -      ARMADOR      -      TRANSPORTADORA",
+                                            font=('arial', 20, 'normal')
+                                            )
 
-        if resultado:
-            self.dados_cntr = {
-                "UNIDADE": resultado[6],
-                "ARMADOR": resultado[4],
-                "TRANSPORTADOR": resultado[5],
-                "BOOKING ENTRADA": resultado[2]
-            }
-        else:
-            messagebox.showerror("Erro", "Contêiner não encontrado.")
-            self.destroy()
+        self.label_cabecalho2.pack(pady= 5, ipadx=10, expand=True, fill='both')
 
-    def _criar_layout(self):
-        self.frames = {
-            "superior_esquerda": ctk.CTkFrame(self),
-            "superior_meio": ctk.CTkFrame(self),
-            "superior_direita": ctk.CTkFrame(self),
-            "inferior": ctk.CTkFrame(self),
-            "inferior_esquerda": ctk.CTkFrame(self),
-            "inferior_meio": ctk.CTkFrame(self),
-            "inferior_direita": ctk.CTkFrame(self),
-            "extra": ctk.CTkFrame(self)
-        }
+        self.btn_fechar = CustomButton(self.frame_principal, text="fechar", command=lambda: messagebox.showerror('salvar','salvando os dados'))
+        self.btn_fechar.pack(side='bottom', expand=False, fill="y")
 
-        self.frames["superior_esquerda"].grid(row=0, column=0, padx=10, pady=10, sticky='nswe')
-        self.frames["superior_meio"].grid(row=0, column=1, padx=10, pady=10, sticky='nswe')
-        self.frames["superior_direita"].grid(row=0, column=2, padx=10, pady=10, sticky='nswe')
-        self.frames["inferior_esquerda"].grid(row=1, column=0, padx=10, pady=10, sticky='nswe')
-        self.frames["inferior_meio"].grid(row=1, column=1, padx=10, pady=10, sticky='nswe')
-        self.frames["inferior_direita"].grid(row=1, column=2, padx=10, pady=10, sticky='nswe')
-        self.frames["extra"].grid(row=1, column=3, padx=10, pady=10, sticky='nswe')
-        self.frames["inferior"].grid(row=0, column=3, padx=10, pady=10, sticky='nswe')
+        self.frame_esq = ctk.CTkFrame(self, width=150, height=200,)
+        self.frame_esq.pack(fill='x', side='left', padx=5, pady=(5, 0), expand=True)
 
-    def _criar_campos(self):
-        # Labels informativos
-        for i, (label, valor) in enumerate(self.dados_cntr.items()):
-            campo = ctk.CTkLabel(self.frames["superior_esquerda"], text=f"{label}: {valor}")
-            campo.grid(row=i, column=0, padx=10, pady=5, sticky='w')
+        self.e_nf = CustomEntry(self.frame_esq, placeholder_text='Nota Fiscal')
+        self.e_nf.pack(pady=(5,0))
 
-        # Campos editáveis
-        campos = [
-            ("Nota Fiscal", "entry", "inferior_esquerda"),
-            ("Lacre Armador", "entry", "inferior_esquerda"),
-            ("Lacre Philco", "entry", "inferior_esquerda"),
-            ("Peso Bruto", "entry", "inferior_meio"),
-            ("Peso Líquido", "entry", "inferior_meio"),
-            ("Valor da Carga", "entry", "inferior_meio"),
-            ("Fábrica", "combo", "inferior_direita", self.lista_fabrica),
-            ("Booking Retirada", "combo", "inferior_direita", self.lista_booking_retirada),
-            ("Status", "combo", "inferior_direita", self.lista_status),
-            ("Destino", "combo", "extra", self.lista_destino),
-            ("Isca 1", "entry", "extra"),
-            ("Isca 2", "entry", "extra"),
-            ("Observações", "textbox", "extra")
-        ]
+        self.e_valor_nf = CustomEntry(self.frame_esq, placeholder_text='Valor da Carga')
+        self.e_valor_nf.pack(pady=(5,0))
 
-        for i, campo in enumerate(campos):
-            texto, tipo, frame = campo[:3]
-            opcoes = campo[3] if len(campo) > 3 else []
+        self.e_pesob = CustomEntry(self.frame_esq, placeholder_text='Peso Bruto')
+        self.e_pesob.pack(pady=(5,0))
 
-            label = ctk.CTkLabel(self.frames[frame], text=texto)
-            label.grid(row=i*2, column=0, padx=10, pady=5, sticky='w')
+        self.e_pesol = CustomEntry(self.frame_esq, placeholder_text='Peso Líquido')
+        self.e_pesol.pack(pady=(5,5))
 
-            if tipo == "entry":
-                widget = ctk.CTkEntry(self.frames[frame])
-            elif tipo == "combo":
-                widget = ctk.CTkComboBox(self.frames[frame], values=opcoes, state='readonly')
-                widget.set("")
-            elif tipo == "textbox":
-                widget = ctk.CTkTextbox(self.frames[frame], width=100, height=30)
+        self.frame_cent = ctk.CTkFrame(self, width=150, height=200,)
+        self.frame_cent.pack(fill='x', side='left', padx=5, pady=(5, 0), expand=True)
 
-            widget.grid(row=i*2+1, column=0, padx=10, pady=5, sticky='nswe')
-            self.widgets[texto] = widget
+        self.e_lacre1 = CustomEntry(self.frame_cent, placeholder_text='Lacre 1')
+        self.e_lacre1.pack(pady=(5,0))
 
-        self.widgets["Status"].set("LIBERADO")
+        self.e_lacre2 = CustomEntry(self.frame_cent, placeholder_text='Lacre 2')
+        self.e_lacre2.pack(pady=(5,0))
 
-    def _criar_botao(self):
-        botao = ctk.CTkButton(self.frames["inferior"], text="Lançar dados", command=self._salvar_dados)
-        botao.grid(row=0, column=0, padx=10, pady=10, sticky='nswe')
+        self.cbbooking = CustomComboBox(self.frame_cent, values=self.lista_booking)
+        self.cbbooking.pack(pady=(5,0))
+        self.cbbooking.set("Booking")
 
-    def _salvar_dados(self):
-        dados = {}
-        for texto, widget in self.widgets.items():
-            if isinstance(widget, ctk.CTkTextbox):
-                dados[texto] = widget.get("1.0", "end").strip()
-            else:
-                dados[texto] = widget.get().strip()
+        self.cb_tp_carga = CustomComboBox(self.frame_cent, values=['CLIENTE', 'AG'])
+        self.cb_tp_carga.pack(pady=(5,5))
+        self.cb_tp_carga.set("Carga")
 
-        print("Dados lançados:")
-        for k, v in dados.items():
-            print(f"{k}: {v}")
 
-        # Aqui você pode adicionar lógica para salvar no banco
-        self.fechar()
+        self.frame_dir = ctk.CTkFrame(self, width=150, height=200,)
+        self.frame_dir.pack(fill='both', side='right', padx=5, pady=(5, 0), expand=True)
 
-    def fechar(self):
-        self.destroy()
+        self.e_isca1 = CustomEntry(self.frame_dir, placeholder_text='Isca 1')
+        self.e_isca1.pack(pady=(5,0))
+
+        self.e_isca2 = CustomEntry(self.frame_dir, placeholder_text='Isca 2')
+        self.e_isca2.pack(pady=(5,0))
+
+        self.cb_tp_fabrica = CustomComboBox(self.frame_dir, values=self.lista_fabrica)
+        self.cb_tp_fabrica.pack(pady=(5,0))
+        self.cb_tp_fabrica.set("Fábrica")
+
+        self.e_obs = CustomEntry(self.frame_dir, placeholder_text='Observação')
+        self.e_obs.pack(pady=(5,5))
+
+    def _carregar_listas(self):
+        """Retorna dicionario, para carregar todas as listas de combobox"""
+        with Listas() as users:
+            dicionario = users.dicionario_de_listas()
+            return dicionario
+
+if __name__ =="__main__":
+    root = ctk.CTk()
+    root.geometry('250x250')
+
+    def abrir_modal():
+        modal = Liberacao(root, '543', r'data\database_cabotagem.db', ['LIBERADO'], ['BK1', 'BK2', 'BK3'], ['AG', 'CLIENTE'], fechar)
+        root.wait_window(modal)
+        print("Valores salvos:")
+        #odal.mainloop()
+
+    def fechar():
+        root.destroy()
+
+
+    btn = ctk.CTkButton(root, command=abrir_modal, text='Abrir Modal')
+    btn.grid()
+
+    root.mainloop()

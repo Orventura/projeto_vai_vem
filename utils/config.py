@@ -1,4 +1,41 @@
-# Configurações dos frames do menu Entradas
+
+import sqlite3
+import pandas as pd
+from pathlib import Path
+from datetime import datetime
+from pathlib import Path
+
+# Caminhos de produção
+PATH_RODOVIARIO = Path(r"H:\EXPEDICAO\03 Rodoviário\03 Dados\rodoviario.db")
+PATH_CABOTAGEM  = Path(r"H:\EXPEDICAO\01 Cabotagem\DADOS\1_Última versão\arquivo\philco.db")
+PATH_VAI_VEM    = Path(r"x:\x")
+
+# Caminhos de teste
+TESTE_RODOVIARIO = Path(r"data\rodoviario.db")
+TESTE_CABOTAGEM  = Path(r"data\database_cabotagem.db")
+TESTE_VAI_VEM    = Path(r"data\dados.db")
+
+# Verifica se todos os arquivos de produção existem
+if all(path.exists() for path in [PATH_RODOVIARIO, PATH_CABOTAGEM, PATH_VAI_VEM]):
+    BD_RODOVIARIO = PATH_RODOVIARIO
+    BD_CABOTAGEM  = PATH_CABOTAGEM
+    BD_VAI_VEM    = PATH_VAI_VEM
+    print("✅ Programa em Produção (Rodoviário, Cabotagem e VaiVem)")
+    print(f"Rodoviário: {BD_RODOVIARIO}")
+    print(f"Cabotagem:  {BD_CABOTAGEM}")
+    print(f"VaiVem:     {BD_VAI_VEM}")
+else:
+    BD_RODOVIARIO = TESTE_RODOVIARIO
+    BD_CABOTAGEM  = TESTE_CABOTAGEM
+    BD_VAI_VEM    = TESTE_VAI_VEM
+    print("⚠️ Usando banco em TESTE (Rodoviário, Cabotagem e VaiVem)")
+    print(f"Rodoviário: {BD_RODOVIARIO}")
+    print(f"Cabotagem:  {BD_CABOTAGEM}")
+    print(f"VaiVem:     {BD_VAI_VEM}")
+
+
+
+# Configurações dos frames do menu Entradas Vai Vem
 subframes = {
     "frame_1": {"x": 90, "y": 0, "width": 198, "height": 170},
     "frame_2": {"x": 290, "y": 0, "width": 198, "height": 170},
@@ -166,8 +203,8 @@ class RecursosVisuais:
         try:
             self.img_dir = pathlib.Path(__file__).parent / 'img'
             self.img_dir.mkdir(exist_ok=True)
-            self.light = ctk.CTkImage(Image.open(self.img_dir / '2_sol.png'), size=(28, 28))
-            self.dark = ctk.CTkImage(Image.open(self.img_dir / '2_lua.png'), size=(28, 28))
+            self.light = ctk.CTkImage(Image.open(self.img_dir / '2_sol.png'), size=(15, 15))
+            self.dark = ctk.CTkImage(Image.open(self.img_dir / '2_lua.png'), size=(15, 15))
             self.adicionar = ctk.CTkImage(Image.open(self.img_dir / 'adicionar.png'), size=(28, 28))
             self.editar = ctk.CTkImage(Image.open(self.img_dir / 'editar.png'), size=(28, 28))
             self.liberar = ctk.CTkImage(Image.open(self.img_dir / 'liberar.png'), size=(28, 28))

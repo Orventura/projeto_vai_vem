@@ -2,6 +2,7 @@ import customtkinter as ctk
 import sqlite3
 import getpass
 from tkinter import messagebox
+from models.views_cab_config import Listas
 
 # Inicialização do CTk
 ctk.set_appearance_mode("dark")
@@ -17,7 +18,7 @@ data_dir = base_dir / "data"
 data_dir.mkdir(parents=True, exist_ok=True)  # Cria se não existir
 
 # Caminho completo para o banco de dados
-db_path = data_dir / "database_cabotagem.db"
+db_path = data_dir / 'database_cabotagem.db'
 
 
 # Conexão com banco SQLite
@@ -25,8 +26,9 @@ conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 
 # Cria tabelas_config se não existirem
-tabelas_config = ["fabrica", "armador", "transportador", "destino", "status", "booking", "user_auth"]
-for tabela in tabelas_config:
+tabelas_config = ["fabrica", "armador", "transportador", "destino", "situacao", "booking"]
+tabelas_criar = tabelas_config + ["user_auth"]
+for tabela in tabelas_criar:
     cursor.execute(f"CREATE TABLE IF NOT EXISTS {tabela} (valor TEXT)")
 conn.commit()
 
@@ -34,7 +36,7 @@ conn.commit()
 class ModalConfiguracoes(ctk.CTkToplevel):
     def __init__(self, master):
         super().__init__(master)
-        self.user = getpass.getuser()
+        self.user = str(getpass.getuser()).upper()
         self._autenticacao()
         self.title("Configurações")
         self.geometry("800x650")
@@ -83,13 +85,16 @@ class ModalConfiguracoes(ctk.CTkToplevel):
         for (valor,) in cursor.fetchall():
             textbox.insert("end", f"{valor}\n")
 
-    def _autenticacao(self):
-        self.chaves = tabelas_config
-        self.valores = self.obter_valores()
-        self.dicionario = dict(zip(self.chaves, self.valores))
-        print(self.dicionario)
+    def _permissao(self):
+        """Valida permissão de usuário"""
+        with Listas() as auth:
+            usuarios_autorizados = auth.lista_user_auth()
+            if self.user in usuarios_autorizados:
+                return True
+            return False
 
-        if self.user not in self.dicionario['user_auth']:
+    def _autenticacao(self):
+        if not self._permissao():
             messagebox.showerror("Erro", f'{self.user}, você não é autorizado!')
             self.destroy()  # Fecha o modal
 

@@ -5,11 +5,11 @@ from tkinter import messagebox
 import getpass
 import platform
 from datetime import datetime
-from src.cab_entrada import FormularioEntrada
+from src.modal_cab_entrada import FormularioEntrada
 from src.modal_cab_editar import EditarStatus
 from src.modal_cab_liberar import Liberacao
 
-from views.view_veiculos import veiculos_cabotagem
+from models.view_veiculos import veiculos_cabotagem
 #from src.bd import BancoDeDados
 
 class Rodoviario:
