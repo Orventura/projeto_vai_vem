@@ -8,22 +8,22 @@ from pathlib import Path
 
 def get_base_path(nome_bd) -> Path:
     """Retorna ambiente de desenvolvimento ou
-        ambiente produção para uso com cxfreeze
+       produção (executável cx_Freeze)
     """
     if getattr(sys, 'frozen', False):
-        # Ambiente de produção (executável com cx_Freeze)
-        base_path = Path(sys.executable).parent.parent / 'data'
-        return base_path / nome_bd
+        # Ambiente de produção: busca dentro da pasta onde o executável roda
+        base_path = Path(sys.executable).parent / 'data'
     else:
         # Ambiente de desenvolvimento
         base_path = Path(__file__).resolve().parent.parent / 'data'
-        return base_path / nome_bd
+    if not (base_path / nome_bd).exists():
+        messagebox.showerror('erro',f"⚠️ Banco de dados não encontrado: {base_path / nome_bd}")
 
+    return base_path / nome_bd
 
 BD_CABOTAGEM = get_base_path('database_cabotagem.db')
 BD_RODOVIARIO = get_base_path('rodoviario.db')
 BD_VAI_VEM = get_base_path('dados.db')
-
 
 # Configurações dos frames do menu Entradas Vai Vem
 subframes = {
@@ -33,7 +33,6 @@ subframes = {
     "frame_4": {"x": 0, "y": 173, "width": 790, "height": 236},
     "frame_5": {"x": 0, "y": 412, "width": 790, "height": 37},
 }
-
 
 def dicionario_entrada_veiculos(valor: list):
     """Dicionario que recebe os dados da interface Lançar entradas CABOTAGEM"""
@@ -183,32 +182,47 @@ from PIL import Image
 import customtkinter as ctk
 from tkinter import messagebox
 
+from pathlib import Path
+from tkinter import messagebox
+import customtkinter as ctk
+from PIL import Image
+import sys
+
+
 class RecursosVisuais:
     def __init__(self):
-
-        path_base = Path(self.get_base_path())
+        path_base = self.get_base_path()
         self.img_dir = path_base / "img"
         self.carregar_recursos()
 
+from pathlib import Path
+import sys
+import customtkinter as ctk
+from PIL import Image
+from tkinter import messagebox
+
+
+class RecursosVisuais:
+    def __init__(self):
+        # Define o diretório base correto
+        path_base = Path(self.get_base_path())
+        self.img_dir = path_base / "utils" / "img"   # <<-- Corrigido aqui
+        self.carregar_recursos()
+
     def get_base_path(self) -> Path:
-        """Retorna ambiente de desenvolvimento ou
-            ambiente produção para uso com cxfreeze
-        """
+        """Retorna o diretório base dependendo do ambiente (dev ou cx_Freeze)"""
         if getattr(sys, 'frozen', False):
-            # Ambiente de produção (executável com cx_Freeze)
+            # Executável com cx_Freeze
             return Path(sys.executable).parent
         else:
-            # Ambiente de desenvolvimento
-            return Path(__file__).resolve().parent
-
-
+            # Ambiente de desenvolvimento (arquivo Python)
+            return Path(__file__).resolve().parent.parent  # sobe 1 nível (de utils para raiz)
 
     def carregar_recursos(self):
-
         """Carrega imagens de tema claro e escuro"""
         try:
-            #self.img_dir / 'img'
             self.img_dir.mkdir(exist_ok=True)
+
             self.light = ctk.CTkImage(Image.open(self.img_dir / '2_sol.png'), size=(15, 15))
             self.dark = ctk.CTkImage(Image.open(self.img_dir / '2_lua.png'), size=(15, 15))
             self.adicionar = ctk.CTkImage(Image.open(self.img_dir / 'adicionar.png'), size=(28, 28))
@@ -222,19 +236,51 @@ class RecursosVisuais:
 
         except Exception as e:
             messagebox.showerror("Erro", f"Falha ao carregar imagens: {str(e)}")
-
             raise SystemExit(1)
+
+
+class Conversao:
+    def __init__(self, df: pd.DataFrame):
+        self.df = df.copy()
+
+    @staticmethod
+    def formatar_float_brasil(valor):
+        """Converte float padrão (1.234.56) para formato brasileiro (1.234,56)"""
+        try:
+            return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        except:
+            return valor
+
+    @staticmethod
+    def formatar_float_usa(valor_str):
+        """Converte string com vírgula (1.234,56) de volta para float padrão (1234.56)"""
+        try:
+            return float(valor_str.replace(".", "").replace(",", "."))
+        except:
+            return valor_str
+
+    def aplicar_formatacao_brasil(self, colunas: list):
+        """Aplica formatação brasileira nas colunas especificadas"""
+        for coluna in colunas:
+            if coluna in self.df.columns:
+                self.df[coluna] = self.df[coluna].apply(self.formatar_float_brasil)
+        return self.df
+
+    def aplicar_formatacao_usa(self, colunas: list):
+        """Reverte formatação brasileira para float padrão"""
+        for coluna in colunas:
+            if coluna in self.df.columns:
+                self.df[coluna] = self.df[coluna].apply(self.formatar_float_usa)
+        return self.df
 
 
 class CustomButton(ctk.CTkButton):
     """
     Botão personalizado no padrão azul do projeto.
-
     - Cor normal:  #2132F3
     - Hover:       #3A4CF7
     - Texto:       #FFFFFF
     """
-
     def __init__(self, master=None, **kwargs):
         super().__init__(
             master,

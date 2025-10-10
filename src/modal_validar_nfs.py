@@ -1,14 +1,16 @@
 import tkinter as tk
 from tkinter import filedialog
+import customtkinter as ctk
 import fitz  # PyMuPDF
 import pandas as pd
 import re
 
-class ValidarNf:
-    def __init__(self, range:int):
+class ColetaNf:
+    def __init__(self, qtd_notas:int):
+        self.qtd_notas = qtd_notas
         self.df_acumulado = pd.DataFrame()
 
-        for _ in range(50):
+        for _ in range(self.qtd_notas):
             novo_df = self.acumular_dados()
             if novo_df is not None:
                 self.df_acumulado = pd.concat([self.df_acumulado, novo_df], ignore_index=True)
@@ -70,5 +72,43 @@ class ValidarNf:
 
         return novo_df
 
+class ModalNf(ctk.CTkToplevel):
+    """Cria um modal para coletar as nfs a serem liberadas, trata os dados
+    de peso bruto, liquido, e valor, carrega para o modal liberar"""
+    def __init__(self, master):
+        super().__init__(master)
+        self.title("Registrar Notas Fiscais")
+        self.resizable(False, False)
+        self.grab_set()
+        self.focus_force()
+        
+        self.criar_widgets()
+      
+    def criar_widgets(self):
+        self.frame1 = ctk.CTkFrame(self, width=400, height=200, fg_color='red')
+        self.frame1.pack(side='left')
+        self.frame2 = ctk.CTkFrame(self, width=400, height=200, fg_color='red')
+        self.frame2.pack(side='left')
+
+        label_nf= ctk.CTkLabel(self.frame1, text='Nota Fiscal')
+        label_nf.pack(pady=5, padx=5, side='right')
+        label_serie= ctk.CTkLabel(self.frame1, text='Série', )
+        label_serie.pack(side='left',)
+        label_vl_total= ctk.CTkLabel(self.frame1, text='Valor Total')
+        label_vl_total.pack(side='top',)
+        label_peso_b= ctk.CTkLabel(self.frame1, text='Peso Bruto')
+        label_peso_b.pack(side='top', expand=True, fill='both')
+        label_peso_l= ctk.CTkLabel(self.frame1, text='Peso Líquido')
+        label_peso_l.pack(side='top',)
+
+        pass
+    
+
+
 if __name__ == "__main__":
-    app = ValidarNf()
+    app = ctk.CTk()
+    app.geometry('555x555')
+    nfs = ColetaNf(1)
+    modal = ModalNf(app)
+    modal.mainloop()
+
