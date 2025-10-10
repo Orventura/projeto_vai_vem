@@ -4,25 +4,39 @@ from pathlib import Path
 import datetime as dt
 from utils.config import *
 
+import sqlite3
+import pandas as pd
+
 def vai_vem():
     """Retorna todos os registros de vai vem"""
-    with sqlite3.connect(BD_VAI_VEM) as conn:   
-        tabela = pd.read_sql_query(
-            """
-            SELECT
-                *
-            FROM
-                vaivem
-            """,
-            conn
-        )
-        tabela['data1'] = pd.to_datetime(tabela['data1'], errors='coerce')
-        tabela['data1'] = tabela['data1'].dt.strftime('%d/%m/%Y')
-        tabela['data2'] = pd.to_datetime(tabela['data1'], errors='coerce')
-        tabela['data2'] = tabela['data1'].dt.strftime('%d/%m/%Y')
+    tabela = pd.DataFrame()  # Inicializa como vazio
+
+    try:
+        with sqlite3.connect(BD_VAI_VEM) as conn:
+            tabela = pd.read_sql_query(
+                """
+                SELECT
+                    *
+                FROM
+                    vaivem
+                """,
+                conn
+            )
+
+        if not tabela.empty:
+            # Converte data1 e data2 separadamente
+            tabela['data1'] = pd.to_datetime(tabela['data1'], errors='coerce')
+            tabela['data2'] = pd.to_datetime(tabela['data2'], errors='coerce')
+
+            tabela['data1'] = tabela['data1'].dt.strftime('%d/%m/%Y')
+            tabela['data2'] = tabela['data2'].dt.strftime('%d/%m/%Y')
+        else:
+            print("⚠️ Nenhum registro encontrado na tabela vaivem.")
+
+    except Exception as e:
+        print(f"Erro ao consultar BD_VAI_VEM: {e}")
 
     return tabela
-
 def vai_vem_pendente():
     """Retorna Apenas os veículos pendentes de recebimento"""
     with sqlite3.connect(BD_VAI_VEM) as conn:   

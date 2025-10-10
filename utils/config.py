@@ -1,38 +1,28 @@
 
-import sqlite3
+import sqlite3, sys
 import pandas as pd
 from pathlib import Path
 from datetime import datetime
 from pathlib import Path
 
-# Caminhos de produção
-PATH_RODOVIARIO = Path(r"H:\EXPEDICAO\03 Rodoviário\03 Dados\rodoviario.db")
-PATH_CABOTAGEM  = Path(r"H:\EXPEDICAO\01 Cabotagem\DADOS\1_Última versão\arquivo\philco.db")
-PATH_VAI_VEM    = Path(r"x:\x")
 
-# Caminhos de teste
-TESTE_RODOVIARIO = Path(r"data\rodoviario.db")
-TESTE_CABOTAGEM  = Path(r"data\database_cabotagem.db")
-TESTE_VAI_VEM    = Path(r"data\dados.db")
+def get_base_path(nome_bd) -> Path:
+    """Retorna ambiente de desenvolvimento ou
+        ambiente produção para uso com cxfreeze
+    """
+    if getattr(sys, 'frozen', False):
+        # Ambiente de produção (executável com cx_Freeze)
+        base_path = Path(sys.executable).parent.parent / 'data'
+        return base_path / nome_bd
+    else:
+        # Ambiente de desenvolvimento
+        base_path = Path(__file__).resolve().parent.parent / 'data'
+        return base_path / nome_bd
 
-# Verifica se todos os arquivos de produção existem
-if all(path.exists() for path in [PATH_RODOVIARIO, PATH_CABOTAGEM, PATH_VAI_VEM]):
-    BD_RODOVIARIO = PATH_RODOVIARIO
-    BD_CABOTAGEM  = PATH_CABOTAGEM
-    BD_VAI_VEM    = PATH_VAI_VEM
-    print("✅ Programa em Produção (Rodoviário, Cabotagem e VaiVem)")
-    print(f"Rodoviário: {BD_RODOVIARIO}")
-    print(f"Cabotagem:  {BD_CABOTAGEM}")
-    print(f"VaiVem:     {BD_VAI_VEM}")
-else:
-    BD_RODOVIARIO = TESTE_RODOVIARIO
-    BD_CABOTAGEM  = TESTE_CABOTAGEM
-    BD_VAI_VEM    = TESTE_VAI_VEM
-    print("⚠️ Usando banco em TESTE (Rodoviário, Cabotagem e VaiVem)")
-    print(f"Rodoviário: {BD_RODOVIARIO}")
-    print(f"Cabotagem:  {BD_CABOTAGEM}")
-    print(f"VaiVem:     {BD_VAI_VEM}")
 
+BD_CABOTAGEM = get_base_path('database_cabotagem.db')
+BD_RODOVIARIO = get_base_path('rodoviario.db')
+BD_VAI_VEM = get_base_path('dados.db')
 
 
 # Configurações dos frames do menu Entradas Vai Vem
@@ -188,20 +178,36 @@ class CustomSheet(Sheet):
         return self
 
 
-import pathlib
+import pathlib, sys
 from PIL import Image
 import customtkinter as ctk
 from tkinter import messagebox
 
 class RecursosVisuais:
     def __init__(self):
+
+        path_base = Path(self.get_base_path())
+        self.img_dir = path_base / "img"
         self.carregar_recursos()
+
+    def get_base_path(self) -> Path:
+        """Retorna ambiente de desenvolvimento ou
+            ambiente produção para uso com cxfreeze
+        """
+        if getattr(sys, 'frozen', False):
+            # Ambiente de produção (executável com cx_Freeze)
+            return Path(sys.executable).parent
+        else:
+            # Ambiente de desenvolvimento
+            return Path(__file__).resolve().parent
+
+
 
     def carregar_recursos(self):
 
         """Carrega imagens de tema claro e escuro"""
         try:
-            self.img_dir = pathlib.Path(__file__).parent / 'img'
+            #self.img_dir / 'img'
             self.img_dir.mkdir(exist_ok=True)
             self.light = ctk.CTkImage(Image.open(self.img_dir / '2_sol.png'), size=(15, 15))
             self.dark = ctk.CTkImage(Image.open(self.img_dir / '2_lua.png'), size=(15, 15))

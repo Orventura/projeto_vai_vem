@@ -12,7 +12,7 @@ label = ctk.CTkLabel(app, text=opcoes[indice[0]], font=("Arial", 20))
 label.pack(pady=40)
 
 def proximo():
-    indice[0] = (indice[0] + 1) % len(opcoes)
+    indice[0] = (indice[0] - 1) % len(opcoes)
     label.configure(text=opcoes[indice[0]])
 
 btn = ctk.CTkButton(app, text="Próximo", command=proximo)

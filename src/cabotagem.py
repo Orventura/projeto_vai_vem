@@ -9,8 +9,8 @@ from src.modal_cab_entrada import FormularioEntrada
 from src.modal_cab_editar import EditarStatus
 from src.modal_cab_liberar import Liberacao
 from src.modal_cab_config import ModalConfiguracoes
-from models.views_cab_config import Listas
-from models.view_veiculos import veiculos_cabotagem
+from models.model_cab_config import Listas
+from models.model_veiculos import veiculos_cabotagem
 from src.bd import BancoDeDados
 
 class Cabotagem:
@@ -174,7 +174,7 @@ class Cabotagem:
             how='inner',
             on=['DT_ENTRADA', 'CONTEINER'])
         self.id = mescla['INDICE'][0]
-
+        print(dados_linha, "<<<<<<<<<<<<<DADOS LINHA")
         return int(self.id)
 
     def abrir_editar_status(self, root):        

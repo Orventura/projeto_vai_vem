@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from models.view_veiculos import tipos_veiculo, filtro, filtrar_veiculo
+from models.model_veiculos import tipos_veiculo, filtro, filtrar_veiculo
 from utils.config import *
 from utils.config import dados_para_input_vaivem as dados_para_input
 import pandas as pd
@@ -166,7 +166,7 @@ class Entradas:
 
     def carregar_sheet(self):
         # Se o sheet foi destruído, recria
-        
+        self.modo_atual = ctk.get_appearance_mode()
         tipo = self.e_tipo_veiculo.get().strip()
         if self.sheet_veiculos is not None:
             self.df_conteiners, self.df_carretas = tipos_veiculo()
@@ -190,8 +190,8 @@ class Entradas:
             self.sheet_veiculos.extra_bindings([
                 ("row_select", self.preencher_dados_transporte)
             ])
-        self.sheet_veiculos.change_theme('dark' if self.modo_atual == 'Dark' else 'light_blue')
-        self.sheet_veiculos.place(x=3, y=3)
+            self.sheet_veiculos.change_theme('dark' if self.modo_atual == 'Dark' else 'light_blue')
+            self.sheet_veiculos.place(x=3, y=3)
 
 
     def filtrar_sheet(self, event=None):

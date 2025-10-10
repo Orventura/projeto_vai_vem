@@ -1,14 +1,14 @@
-import sqlite3
+import sqlite3, sys
 from pathlib import Path
+from utils.config import *
 
 class BancoDeDados:
 
-    def __init__(self, nome_banco='dados.db'):
-        pasta = Path(__file__).parent.parent / 'data'
-        self.pasta = Path(pasta)
-        self.caminho_banco = self.pasta / nome_banco
-        self._criar_pasta()
-        self.conn = sqlite3.connect(self.caminho_banco)
+    def __init__(self):
+        self.db_path = BD_VAI_VEM
+        print('DEBUG', 'ACESSO_BD_VAI_VEM','bd.py', self.db_path)
+
+        self.conn = sqlite3.connect(self.db_path)
         self._criar_tabela()
 
     def _criar_pasta(self):
@@ -54,7 +54,7 @@ class BancoDeDados:
         cursor = self.conn.cursor()
         cursor.execute(criar_tabela_sql)
         self.conn.commit()
-        print(f"Tabela 'vaivem' criada/verificada com sucesso em '{self.caminho_banco}'.")
+        print(f"Tabela 'vaivem' criada/verificada com sucesso em '{self.db_path}'.")
     
     def gerar_id2(self):
         cursor = self.conn.cursor()
@@ -116,7 +116,7 @@ class BancoDeDados:
 
     def __exit__(self, tipo, valor, traceback):
         self.conn.close()
-        print(f"Conexão com o banco '{self.caminho_banco.name}' encerrada.")
+        print(f"Conexão com o banco '{self.db_path.name}' encerrada.")
 
 
     def receber_in_sql(self, id2: int, lista: list):
@@ -137,7 +137,7 @@ class BancoDeDados:
 
         params = tuple(lista) + (id2,)
 
-        with sqlite3.connect(self.caminho_banco) as conn:
+        with sqlite3.connect(self.db_path) as conn:
             cursor = conn.execute(
                 '''
                 UPDATE vaivem

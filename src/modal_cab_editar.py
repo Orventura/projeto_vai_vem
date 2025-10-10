@@ -4,8 +4,7 @@ from tkinter import messagebox
 from src.bd_cabotagem import Database
 from utils.config import CustomButton, CustomComboBox, CustomEntry, CustomLabel
 from getpass import getuser
-from models.views_cab_config import Listas
-
+from models.model_cab_config import Listas
 
 
 class EditarStatus(ctk.CTkToplevel):
@@ -65,7 +64,7 @@ class EditarStatus(ctk.CTkToplevel):
             if tipo == "entry":
                 entrada = CustomEntry(self)
             elif tipo == "combo":
-                entrada = CustomComboBox(self, values=opcoes[0], state='readonly')
+                entrada = CustomComboBox(self, values=opcoes[0]) #state='readonly')
                 entrada.set("")
 
             entrada.grid(row=i, column=1, padx=10, pady=5, sticky='nswe')
@@ -74,9 +73,6 @@ class EditarStatus(ctk.CTkToplevel):
     def _criar_botao(self):
         botao = CustomButton(self, text="Salvar", command=self._salvar_dados)
         botao.grid(row=len(self.widgets)+len(self.dados_cntr), column=1, padx=10, pady=10, sticky='nswe')
-
-
-
 
     def _salvar_dados(self):
         #entradas_widget = self._valida_dados()
@@ -129,17 +125,9 @@ class EditarStatus(ctk.CTkToplevel):
             self.on_close()
             self.destroy()
 
-
     def _valida_dados(self, dados: dict) -> bool:
-        """Recebe o dicionário antes de lançar e valida os dados"""
-        print('-------------------\n\n', dados, "\n\ndicionário recebido ---------------")
 
         user = str(getuser()).upper()
-
-
-
-        print("\n\n", user, "<-------------Autorizado")
-        print("\n\n",self.usuarios_autorizados, "<<<<<<< usuários autorizados")
 
         for campo, valor in dados.items():
             valor = str(valor).strip()
@@ -156,15 +144,9 @@ class EditarStatus(ctk.CTkToplevel):
         return True
 
     def permissão(self):
-        """Retorna lista de usuários autorizados"""
-        
+        """Retorna True se usuário estiver na lista de autorizado"""
         if self.user in self.usuarios_autorizados:
-            print("/n/n", self.user, "<<<<<<<<<<< user - TRUE<<<<<<<<<<<")
-            print("/n/n", self.usuarios_autorizados, "<<<<<<<<<<<<<<<<<<<<<<")
             return True
-        print("\n\n", self.user, "<<<<<<<<<<< user - FALSE<<<<<<<<<<<")
-        print("\n\n", self.usuarios_autorizados, "<<<<<<<<<<<<<<<<<<<<<<")
-
         return False
 
     def ocultar_destino(self):

@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from models.views_vai_vem import vai_vem_pendente
+from models.model_vai_vem import vai_vem_pendente
 from src.bd import BancoDeDados
 from utils.config import *
 import pandas as pd

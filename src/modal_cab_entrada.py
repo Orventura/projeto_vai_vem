@@ -6,7 +6,7 @@ from utils.config import *
 from datetime import datetime
 from src.bd_cabotagem import Database
 import getpass
-from models.views_cab_config import Listas
+from models.model_cab_config import Listas
 
 class FormularioEntrada(ctk.CTkToplevel):
     def __init__(self, master=None, listas=None, on_close=None):
@@ -20,11 +20,9 @@ class FormularioEntrada(ctk.CTkToplevel):
         self.dicionario_listas = self._carregar_listas()
         self.lista_fabrica = self.dicionario_listas['fabrica']
         self.lista_armador = self.dicionario_listas['armador']
-        self.lista_situacao = self.dicionario_listas['situacao']
         self.usuarios_autorizados = self.dicionario_listas['user_auth']
         self.lista_destino = self.dicionario_listas['destino']
         self.lista_transportador = self.dicionario_listas['transportador']
-
 
         self.img = RecursosVisuais()
 
@@ -38,7 +36,7 @@ class FormularioEntrada(ctk.CTkToplevel):
             ("Transportador:", "combo", self.lista_transportador),
             ("Conteiner:", "entry"),
             ("Destino:", "combo", self.lista_destino), 
-            ("Status:", "combo", self.lista_situacao),
+            ("Status:", "combo", ['VAZIO']),
         ]
 
         self._criar_campos()
@@ -55,7 +53,7 @@ class FormularioEntrada(ctk.CTkToplevel):
             if tipo == "entry":
                 entrada = CustomEntry(self)
             elif tipo == "combo":
-                entrada = CustomComboBox(self, values=opcoes, state='readonly')
+                entrada = CustomComboBox(self, values=opcoes)
                 entrada.set("")
             elif tipo == "date":
                 entrada = DateEntry(self, locale='pt_br', background='darkblue', foreground='white', borderwidth=2)

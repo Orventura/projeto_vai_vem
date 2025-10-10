@@ -1,15 +1,14 @@
-import sqlite3
+import sqlite3, sys
 from pathlib import Path
 from datetime import date
+from utils.config import *
 
 class Database:
-    def __init__(self, db_name="database_cabotagem.db"):
-        # Cria a pasta data na raiz do projeto
-        self.data_dir = Path(__file__).parent.parent / "data"
+    def __init__(self):
 
-        self.data_dir.mkdir(exist_ok=True)
-        self.db_path = self.data_dir / db_name
-        
+        # Cria a pasta data na raiz do projeto
+        self.db_path = BD_CABOTAGEM
+        print('DEBUG', 'ACESSO_BD_CABOTAGEM','bd_cabotagem.py', self.db_path)
         # Conecta ao banco
         self.conn = sqlite3.connect(self.db_path, detect_types=sqlite3.PARSE_DECLTYPES)
         self.conn.row_factory = sqlite3.Row
@@ -17,7 +16,7 @@ class Database:
         
         # Cria as tabelas se não existirem
         self._create_tables()
-    
+
     def _create_tables(self):
         self.cursor.execute("""
         CREATE TABLE IF NOT EXISTS BASE (
@@ -218,6 +217,7 @@ class Database:
     def delete_status(self, indice):
         self.cursor.execute("DELETE FROM STATUS WHERE INDICE=?", (indice,))
         self.conn.commit()
+
 
 
 # -----------------------

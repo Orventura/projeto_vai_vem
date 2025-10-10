@@ -1,5 +1,6 @@
 #testes
 dados_teste/
+executavel.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -147,3 +148,6 @@ venv.bak/
 # System files
 Thumbs.db
 .DS_Store
+
+executavel.py
+src/nao.py

@@ -7,6 +7,13 @@ from src.modal_cab_entrada import FormularioEntrada
 from src.cabotagem import Cabotagem
 from src.rodoviario import Rodoviario
 from src.modal_cab_entrada import FormularioEntrada
+from src.bd import BancoDeDados
+from src.bd_cabotagem import Database
+
+with BancoDeDados() as bd:
+    bd._criar_tabela()
+with Database() as bd:
+    bd._create_tables()
 
 
 class JanelaPrincipal:
@@ -63,7 +70,7 @@ class JanelaPrincipal:
 
         self.botao_tema = CustomButton(
             self.frame_btn_cfg,
-            image=self.img.dark,
+            image=self.img.light,
             text="",
             width=30,
             height=30,

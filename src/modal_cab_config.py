@@ -2,24 +2,18 @@ import customtkinter as ctk
 import sqlite3
 import getpass
 from tkinter import messagebox
-from models.views_cab_config import Listas
+from models.model_cab_config import Listas
+from pathlib import Path
+from utils.config import *
 
 # Inicialização do CTk
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
-from pathlib import Path
 
-# Diretório onde o arquivo atual está salvo
-base_dir = Path(__file__).parent.parent
+db_path = data_dir = BD_CABOTAGEM
 
-# Subpasta 'data' dentro do diretório do arquivo
-data_dir = base_dir / "data"
-data_dir.mkdir(parents=True, exist_ok=True)  # Cria se não existir
-
-# Caminho completo para o banco de dados
-db_path = data_dir / 'database_cabotagem.db'
-
+print('DEBUG', 'ACESSO_BD_CABOTAGEM', 'modal_cab_config.py',db_path)
 
 # Conexão com banco SQLite
 conn = sqlite3.connect(db_path)

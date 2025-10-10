@@ -9,7 +9,7 @@ from src.modal_cab_entrada import FormularioEntrada
 from src.modal_cab_editar import EditarStatus
 from src.modal_cab_liberar import Liberacao
 
-from models.view_veiculos import veiculos_cabotagem
+from models.model_veiculos import veiculos_cabotagem
 #from src.bd import BancoDeDados
 
 class Rodoviario:
