@@ -86,21 +86,49 @@ class ModalNf(ctk.CTkToplevel):
       
     def criar_widgets(self):
         self.frame1 = ctk.CTkFrame(self, width=400, height=200, fg_color='red')
-        self.frame1.pack(side='left')
+        self.frame1.pack(side='top')
         self.frame2 = ctk.CTkFrame(self, width=400, height=200, fg_color='red')
-        self.frame2.pack(side='left')
+        self.frame2.pack(side='bottom')
 
+
+
+
+
+
+
+
+        label_peso_b= ctk.CTkLabel(self.frame1, text='Peso Bruto')
+        label_peso_b.pack(side='right', padx=5)
+        label_peso_l= ctk.CTkLabel(self.frame1, text='Peso Líquido')
+        label_peso_l.pack(side='right', padx=5)
+        label_vl_total= ctk.CTkLabel(self.frame1, text='Valor Total')
+        label_vl_total.pack(pady=5, padx=5, side='right')
+        label_serie= ctk.CTkLabel(self.frame1, text='Série', )
+        label_serie.pack(pady=5, padx=5, side='right')
         label_nf= ctk.CTkLabel(self.frame1, text='Nota Fiscal')
         label_nf.pack(pady=5, padx=5, side='right')
-        label_serie= ctk.CTkLabel(self.frame1, text='Série', )
-        label_serie.pack(side='left',)
-        label_vl_total= ctk.CTkLabel(self.frame1, text='Valor Total')
-        label_vl_total.pack(side='top',)
-        label_peso_b= ctk.CTkLabel(self.frame1, text='Peso Bruto')
-        label_peso_b.pack(side='top', expand=True, fill='both')
-        label_peso_l= ctk.CTkLabel(self.frame1, text='Peso Líquido')
-        label_peso_l.pack(side='top',)
 
+        label_peso_b= ctk.CTkLabel(self.frame1, text='Peso Bruto')
+        label_peso_b.pack(side='right', padx=5)
+        label_peso_l= ctk.CTkLabel(self.frame1, text='Peso Líquido')
+        label_peso_l.pack(side='right', padx=5)
+        label_vl_total= ctk.CTkLabel(self.frame1, text='Valor Total')
+        label_vl_total.pack(pady=5, padx=5, side='right')
+        label_serie= ctk.CTkLabel(self.frame1, text='Série', )
+        label_serie.pack(pady=5, padx=5, side='right')
+        label_nf= ctk.CTkLabel(self.frame1, text='Nota Fiscal')
+        label_nf.pack(pady=5, padx=5, side='right')
+
+        label_peso_b2= ctk.CTkLabel(self.frame2, text='Peso Bruto')
+        label_peso_b2.pack(side='right', padx=5)
+        label_peso_l2= ctk.CTkLabel(self.frame2, text='Peso Líquido')
+        label_peso_l2.pack(side='right', padx=5)
+        label_vl_total2= ctk.CTkLabel(self.frame2, text='Valor Total')
+        label_vl_total2.pack(pady=5, padx=5, side='right')
+        label_serie2= ctk.CTkLabel(self.frame2, text='Série', )
+        label_serie2.pack(pady=5, padx=5, side='right')
+        label_nf= ctk.CTkLabel(self.frame2, text='Nota Fiscal')
+        label_nf.pack(pady=5, padx=5, side='right')
         pass
     
 
