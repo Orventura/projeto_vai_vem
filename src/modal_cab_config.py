@@ -20,7 +20,7 @@ conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 
 # Cria tabelas_config se não existirem
-tabelas_config = ["fabrica", "armador", "transportador", "destino", "situacao", "booking"]
+tabelas_config = ["fabrica", "armador", "transportador", "destino", "situacao", "booking", "iscas_ag", "iscas_cliente"]
 tabelas_criar = tabelas_config + ["user_auth"]
 for tabela in tabelas_criar:
     cursor.execute(f"CREATE TABLE IF NOT EXISTS {tabela} (valor TEXT)")
@@ -79,7 +79,7 @@ class ModalConfiguracoes(ctk.CTkToplevel):
         for (valor,) in cursor.fetchall():
             textbox.insert("end", f"{valor}\n")
 
-    def _permissao(self):
+    def permissao(self):
         """Valida permissão de usuário"""
         with Listas() as auth:
             usuarios_autorizados = auth.lista_user_auth()
@@ -88,7 +88,7 @@ class ModalConfiguracoes(ctk.CTkToplevel):
             return False
 
     def _autenticacao(self):
-        if not self._permissao():
+        if not self.permissao():
             messagebox.showerror("Erro", f'{self.user}, você não é autorizado!')
             self.destroy()  # Fecha o modal
 

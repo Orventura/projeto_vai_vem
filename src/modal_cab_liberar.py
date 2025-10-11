@@ -3,11 +3,14 @@ from tkinter import messagebox
 from utils.config import CustomButton, CustomEntry, CustomComboBox
 from models.model_cab_config import Listas
 from datetime import datetime
-from src.bd_cabotagem import Database
 import sqlite3
 from utils.config import *
 import pandas as pd
 from getpass import getuser
+from controllers.ctrl_modal_liberar import CtrlLiberar
+from src.bd_cabotagem import Database
+from models.model_cab_config import Listas
+
 
 class Liberacao(ctk.CTkToplevel):
     """Cria um modal para liberar os veículos,
@@ -26,17 +29,14 @@ class Liberacao(ctk.CTkToplevel):
         self.data = None
         self.status = None        
         self.id = id
+        with Listas() as config:
+            self.lista_booking = config.lista_bookings()
+            self.lista_fabrica = config.lista_fabricas()
         self.lista_dados = lista
         self.armador = lista[3]
         self.transp = lista[4]
         self.conteiner = lista[5]
         self.bd_path = bd_path
-        self.dicionario_listas = self._carregar_listas()
-        self.lista_fabrica = self.dicionario_listas['fabrica']
-        self.lista_booking = self.dicionario_listas['booking']
-        
-
-        self.widgets = {}
 
         self.frame_principal = ctk.CTkFrame(self, width=800, height=500, fg_color='transparent')
         self.frame_principal.pack(fill='both', side='bottom', padx=5, pady=5, expand=True)
@@ -57,7 +57,7 @@ class Liberacao(ctk.CTkToplevel):
 
         self.label_cabecalho2.pack(pady= 5, padx=(0,0), expand=True, fill='both')
 
-        self.btn_fechar = CustomButton(self.frame_principal, text="fechar", command=lambda: self.coletar_dados())
+        self.btn_fechar = CustomButton(self.frame_principal, text="fechar", command=lambda: self.coletar())
         self.btn_fechar.pack(side='bottom', expand=False, fill="y")
 
         self.frame_esq = ctk.CTkFrame(self, width=150, height=200,)
@@ -109,85 +109,25 @@ class Liberacao(ctk.CTkToplevel):
         self.e_obs = CustomEntry(self.frame_dir, placeholder_text='Observação')
         self.e_obs.pack(pady=(5,5))
 
-    def _carregar_listas(self):
-        """Retorna dicionario, para carregar todas as listas de combobox"""
-        with Listas() as users:
-            dicionario = users.dicionario_de_listas()
-            return dicionario
+        self.control = CtrlLiberar(self, self.id, self.user)
 
 
-    # 🔹 Coleta os dados de todos os widgets
-    def coletar_dados(self) -> dict:
-        dados = {
-            "NOTA_FISCAL": self.e_nf.get().strip(),
-            "VALOR": self.e_valor_nf.get().strip(),
-            "PESO_BRUTO": self.e_pesob.get().strip(),
-            "PESO_LIQUIDO": self.e_pesol.get().strip(),
-            "LACRE_ARMADOR": self.e_lacre_arm.get().strip(),
-            "LACRE_PHILCO": self.e_lacre_ph.get().strip(),
-            "ARMADOR_BOOKING_DESTINO": self.cbbooking.get().strip(),
-            "FABRICA": self.cb_tp_fabrica.get().strip(),
-            "ISCA_1": self.e_isca1.get().strip(),
-            "ISCA_2": self.e_isca2.get().strip(),
-            "OBS": self.e_obs.get().strip(),
-            "STATUS": "LIBERADO",
-            "TIPO_CARGA": self.cb_tp_carga.get().strip(),
-        }
-        if not self.validar_vazios(dados=dados):
+    def coletar(self):
+        dados = self.control.coletar_dados()
+        if not self.control.validar_vazios(dados=dados):
             return
-
-        if not self.validar_booking(dados=dados):
+        if not self.control.validar_booking(dados):
             return
+        if not self.control.validar_iscas(dados):
+            return
+        self.control.lancar_dados(dados=dados)
 
-        dados.pop('TIPO_CARGA')
-        with Database() as db:
-            db.update_base(self.id, **dados)
-        self.destroy()
-        return dados
+        print(dados)
+
+    
 
 
-    def validar_vazios(self, dados: dict) -> bool:
-        """Valida os campos paa não permitir entradas null"""
 
-        combo_valores = ["Booking", "Fábrica", "Carga"]
-        validar = list(dados.values())
-        campos = list(dados.keys())
-        for i, valor in enumerate(validar):
-            if not valor:
-                messagebox.showerror(title="Erro", message=f"Preencha o campo obrigatório: {campos[i]}")
-                return False
-            if valor in combo_valores:
-                messagebox.showerror(title="Erro",message=f"Preencha o campo obrigatório: {campos[i]}")
-                return False
-        return True        
-
-    def validar_booking(self, dados: dict) -> bool:
-        try:
-            with Database() as db:
-                registro = db.fetch_base(INDICE=int(self.id))[0]
-                print(registro, "lista direto do banco")
-
-                teste1 = registro['DESTINO']
-                teste2 = registro['ARMADOR']
-                print('ID', self.id)
-                print('teste 1 DESTINO', teste1)
-                print('teste 2 ARMADOR', teste1)
-        except Exception as e:
-            messagebox.showerror("Erro", f"Falha ao buscar dados: {e}")
-            return False
-
-        validacao = dados.get('ARMADOR_BOOKING_DESTINO', '')
-
-        if teste1 in validacao and teste2 in validacao:
-            return True
-        if teste1 in validacao and teste2 not in validacao:
-            messagebox.showerror('Erro Armador x Booking', f"{self.user}, procure o responsável da cabotagem!")
-            return False
-        if teste1 not in validacao and teste2 in validacao:
-            messagebox.showerror('Erro Destino x Booking', f"{self.user}, procure o responsável da cabotagem!")
-            return False
-        messagebox.showerror('Erro Destino x Armador x Booking', f"{self.user}, procure o responsável da cabotagem!")
-        return False
 
 
 

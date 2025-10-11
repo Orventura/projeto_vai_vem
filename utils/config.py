@@ -4,26 +4,31 @@ import pandas as pd
 from pathlib import Path
 from datetime import datetime
 from pathlib import Path
+from tkinter import messagebox
 
 
 def get_base_path(nome_bd) -> Path:
-    """Retorna ambiente de desenvolvimento ou
-       produção (executável cx_Freeze)
+    """ Retorna ambiente de desenvolvimento ou
+        produção (executável cx_Freeze)
     """
     if getattr(sys, 'frozen', False):
         # Ambiente de produção: busca dentro da pasta onde o executável roda
-        base_path = Path(sys.executable).parent / 'data'
-    else:
+        base_path = Path(sys.executable).parent
         # Ambiente de desenvolvimento
-        base_path = Path(__file__).resolve().parent.parent / 'data'
-    if not (base_path / nome_bd).exists():
+    else:
+        base_path = Path(__file__).resolve().parent.parent
+
+    db_path = base_path / nome_bd
+
+    if not db_path.exists():
+        db_path.parent.mkdir(parents=True, exist_ok=True)
         messagebox.showerror('erro',f"⚠️ Banco de dados não encontrado: {base_path / nome_bd}")
 
-    return base_path / nome_bd
+    return db_path
 
-BD_CABOTAGEM = get_base_path('database_cabotagem.db')
-BD_RODOVIARIO = get_base_path('rodoviario.db')
-BD_VAI_VEM = get_base_path('dados.db')
+BD_CABOTAGEM = get_base_path(Path('data/database_cabotagem.db'))
+BD_RODOVIARIO = get_base_path(Path('data/rodoviario.db'))
+BD_VAI_VEM = get_base_path(Path('data/dados.db'))
 
 # Configurações dos frames do menu Entradas Vai Vem
 subframes = {
@@ -240,8 +245,8 @@ class RecursosVisuais:
 
 
 class Conversao:
-    def __init__(self, df: pd.DataFrame):
-        self.df = df.copy()
+    def __init__(self):
+        pass
 
     @staticmethod
     def formatar_float_brasil(valor):

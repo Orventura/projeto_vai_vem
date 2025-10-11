@@ -51,9 +51,14 @@ class Listas:
     def lista_bookings(self):
         return self._extrair_lista("booking")
     
+    def lista_pgr(self):
+        ag = self._extrair_lista("iscas_ag")
+        cliente = self._extrair_lista("iscas_cliente")
+        return ag, cliente
+    
     def dicionario_de_listas(self):
         lista = []
-        tabelas = ['user_auth', 'transportador', 'fabrica', 'armador', 'destino', 'situacao', 'booking']
+        tabelas = ['user_auth', 'transportador', 'fabrica', 'armador', 'destino', 'situacao', 'booking', 'iscas_ag', 'iscas_cliente']
         for tabela in tabelas:
             v = self._extrair_lista(tabela)
             lista.append(v)
