@@ -58,8 +58,8 @@ class Liberacao(ctk.CTkToplevel):
 
         self.label_cabecalho2.pack(pady= 5, padx=(0,0), expand=True, fill='both')
 
-        self.btn_fechar = CustomButton(self.frame_principal, text="fechar", command=lambda: self.coletar())
-        self.btn_fechar.pack(side='bottom', expand=False, fill="y")
+        self.btn_salvar = CustomButton(self.frame_principal,width=50, text="Salvar", command=lambda: self.coletar())
+        self.btn_salvar.pack(side='bottom', expand=False, fill="y")
 
         self.frame_esq = ctk.CTkFrame(self, width=150, height=200,)
         self.frame_esq.pack(fill='x', side='left', padx=5, pady=(5, 0), expand=True)
