@@ -6,7 +6,6 @@ class BancoDeDados:
 
     def __init__(self):
         self.db_path = BD_VAI_VEM
-        print('DEBUG', 'ACESSO_BD_VAI_VEM','bd.py', self.db_path)
 
         self.conn = sqlite3.connect(self.db_path)
         self._criar_tabela()

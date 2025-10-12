@@ -87,7 +87,6 @@ class FormularioEntrada(ctk.CTkToplevel):
                     dados[texto] = widget.get().strip().upper()
                 elif isinstance(widget, DateEntry):
                     dados[texto] = widget.get_date().strftime('%Y-%m-%d')
-            print(f'esses saõ os dados DEBUG{dados}')
 
             # Validação: verifica se algum campo está vazio
             for key, value in dados.items():
@@ -96,7 +95,6 @@ class FormularioEntrada(ctk.CTkToplevel):
 
             self.dados_finais  = dicionario_entrada_veiculos(list(dados.values()))
             self.dados_status = dicionario_editar_status(list(self.dados_finais.values()), user)
-            print(f'\n\n--------DEBUG DADOS SELECIONADO - entrada Status \n{self.dados_status}\n\n')
         
             with Database() as db:
                 # Converter a string de data para date
@@ -105,7 +103,6 @@ class FormularioEntrada(ctk.CTkToplevel):
 
                 # Inserir usando **kwargs
                 id_inserido = db.insert_base(**self.dados_finais)
-                print(f"Registro inserido com INDICE = {id_inserido}")
             
             with Database() as db:
                 db.insert_status(**self.dados_status)

@@ -174,7 +174,6 @@ class Cabotagem:
             how='inner',
             on=['DT_ENTRADA', 'CONTEINER'])
         self.id = mescla['INDICE'][0]
-        print(dados_linha, "<<<<<<<<<<<<<DADOS LINHA")
         return int(self.id)
 
     def abrir_editar_status(self, root):        
@@ -191,7 +190,7 @@ class Cabotagem:
             linha = selecionados[0]
             dados_linha = self.sheet.get_row_data(linha)
             
-            self.formulario = EditarStatus(root, dados_linha, r'data\database_cabotagem.db', self.id, on_close=self.resetar_sheet)
+            self.formulario = EditarStatus(root, dados_linha, BD_CABOTAGEM, self.id, on_close=self.resetar_sheet)
             self.formulario.grab_set()
             self.formulario.focus_force()
             
@@ -215,7 +214,8 @@ class Cabotagem:
             master=self.root,
             lista=dados_linha,
             id=self.id,
-            bd_path=r'data\database_cabotagem.db',
+            bd_path=BD_CABOTAGEM,
+            on_close=self.resetar_sheet
             )
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao tentar obter os dados do veículo:\n{e}")

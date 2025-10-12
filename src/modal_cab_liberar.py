@@ -17,12 +17,13 @@ class Liberacao(ctk.CTkToplevel):
     recebe o master_widget, lista dos dados selecionados, indice dos
     dados selecionados na sheet prinsipal, caminho do banco de dados,
     e controller."""
-    def __init__(self, master, lista: list, id, bd_path):
+    def __init__(self, master, lista: list, id, bd_path, on_close=None):
 
         super().__init__(master)
         self.title("REGISTRAR LIBERAÇÃO")
         #self.resizable(False, False)
         #self.controller = controller
+        self.on_close = on_close
         self.grab_set()
         self.focus_force()
         self.user = getuser().upper()
@@ -121,6 +122,9 @@ class Liberacao(ctk.CTkToplevel):
         if not self.control.validar_iscas(dados):
             return
         self.control.lancar_dados(dados=dados)
+        if self.on_close:
+            self.on_close()
+        self.destroy()
 
         print(dados)
 

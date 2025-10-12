@@ -8,7 +8,6 @@ class Database:
 
         # Cria a pasta data na raiz do projeto
         self.db_path = BD_CABOTAGEM
-        print('DEBUG', 'ACESSO_BD_CABOTAGEM','bd_cabotagem.py', self.db_path)
         # Conecta ao banco
         self.conn = sqlite3.connect(self.db_path, detect_types=sqlite3.PARSE_DECLTYPES)
         self.conn.row_factory = sqlite3.Row
@@ -255,4 +254,4 @@ class Database:
 
 if __name__ == "__main__":
     with Database() as db:
-        print(db.fetch_base(INDICE=4))
+        print(db.fetch_base(INDICE=5))

@@ -126,8 +126,8 @@ if __name__ == "__main__":
     def abrir_modal():
         modal = ModalConfiguracoes(app)
         app.wait_window(modal)
-        print("Valores salvos:")
-        print(modal.obter_valores())
+        #print("Valores salvos:")
+        #print(modal.obter_valores())
 
     btn_abrir_modal = ctk.CTkButton(app, text="Abrir Configurações", command=abrir_modal)
     btn_abrir_modal.pack(pady=60)

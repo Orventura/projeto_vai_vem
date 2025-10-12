@@ -2,6 +2,8 @@ from src.bd_cabotagem import Database
 from utils.config import Conversao
 from models.model_cab_config import Listas
 from tkinter import messagebox
+from src.bd_cabotagem import Database
+from datetime import datetime, timedelta
 
 class CtrlLiberar:
     """Classe responsável por controlar o modal de liberação de veículos"""
@@ -35,7 +37,6 @@ class CtrlLiberar:
             valor = widget.get().strip()
             dados_coletados[chave] = valor
         dados_coletados['STATUS'] = "LIBERADO"
-        print(dados_coletados)
 
         try:
             dados_coletados["VALOR"] = float(self.convert.formatar_float_usa(dados_coletados["VALOR"]))
@@ -112,8 +113,6 @@ class CtrlLiberar:
             messagebox.showerror('Erro', f'Dados invalidos, Verifique os dados PGR: {str(e)}') #exemplo QTD_ISCAS_1 = 650000
 
 
-        print("LIMITES VALOR-------", limite_0, limite_1, limite_2)
-        print("LIMITES TIPO-------", type(limite_0), type(limite_1), type(limite_2))
 
         isca1 = dados.get("ISCA_1", "").strip()
         isca2 = dados.get("ISCA_2", "").strip()
@@ -176,6 +175,45 @@ class CtrlLiberar:
         #    with Listas() as users:
 
     def lancar_dados(self, dados: dict):
-        dados.pop('TIPO_CARGA')
-        print(dados)
-        messagebox.showinfo('Sucesso', 'Veículo liberado, dados salvos!')
+        # remove TIPO_CARGA se existir, sem lançar KeyError
+        dados.pop('TIPO_CARGA', None)
+    
+        # atualiza a tabela BASE
+        try:
+            with Database() as db:
+                db.update_base(self.id, **dados)
+        except Exception as e:
+            messagebox.showerror('Erro tabela BASE', f'Não foi possível salvar os dados:\n {str(e)}')
+            return
+    
+        # busca os dados de status correspondentes e prepara o dicionário para inserir em STATUS
+        try:
+            with Database() as db:
+                dados_status_list = db.fetch_base(INDICE=int(self.id))
+    
+            # checa se retornou pelo menos uma linha
+            if not dados_status_list:
+                messagebox.showerror('Erro Tabela STATUS', f'Nenhum registro encontrado em BASE para INDICE={self.id}')
+                return
+    
+            # pega o primeiro dicionário (ou ajuste se houver expectativa de múltiplos)
+            dados_status = dados_status_list[0].copy()  # copy para não mutar o objeto original
+            # atualiza a data de entrada (use um formato adequado)
+            dados_status['DT_ENTRADA'] = '2025-01-01'
+    
+            # remove a coluna INDICE antes de inserir (se necessário)
+            dados_status.pop('INDICE', None)
+    
+        except Exception as e:
+            messagebox.showerror('Erro Tabela STATUS', f'Não foi possível preparar os dados de STATUS:\n {str(e)}')
+            return
+    
+        # insere na tabela STATUS
+        try:
+            with Database() as db:
+                db.insert_status(**dados_status)
+        except Exception as e:
+            messagebox.showerror('Erro ao inserir STATUS', f'Não foi possível salvar os dados:\n {str(e)}')
+            return
+    
+        messagebox.showinfo('Sucesso', 'Todos os dados foram salvos!')
