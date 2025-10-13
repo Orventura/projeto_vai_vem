@@ -12,6 +12,7 @@ from src.modal_cab_config import ModalConfiguracoes
 from models.model_cab_config import Listas
 from models.model_veiculos import veiculos_cabotagem
 from src.modal_cab_retorno import ModalRetorno
+from src.modal_cab_saida import ModalSaida
 
 
 class Cabotagem:
@@ -44,7 +45,7 @@ class Cabotagem:
             "Adicionar Veículo": {"imagem": self.img.adicionar, "comando": lambda: self.abrir_entrada_cabotagem(self.root)},
             "Editar Status": {"imagem": self.img.editar, "comando": lambda: self.abrir_editar_status(self.root)},
             "Liberar Veículo": {"imagem": self.img.liberar, "comando": lambda: self.abrir_liberacao()},
-            "Registrar Saída": {"imagem": self.img.sair, "comando": lambda: print("Sair")},
+            "Registrar Saída": {"imagem": self.img.sair, "comando": lambda: self.abrir_saida()},
             "Retornar Veículo": {"imagem": self.img.retornar, "comando": lambda: self.abrir_retorno()},
             "Configurações": {"imagem": self.img.config, "comando": lambda: self.abrir_configuracoes()}
         }
@@ -227,9 +228,13 @@ class Cabotagem:
 
     def abrir_retorno(self):
         """Abre o modal Retorno de Veículo"""
-        self.modal_retorno = ModalRetorno(self.root, on_close=self.resetar_sheet)
+        self.modal_retorno = ModalRetorno(root)
         self.modal_retorno.grab_set()
         self.modal_retorno.focus_force()
+    
+    def abrir_saida(self):
+        """Abre o modal de Saída de Veículo"""
+        self.modal_saida = ModalSaida(self.root)
 
     def fechar_formulario(self):
         if hasattr(self, 'formulario') and self.formulario.winfo_exists():

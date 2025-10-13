@@ -11,13 +11,13 @@ class ControlRetorno:
     def __init__(self, modal):
         self.modal = modal
 
-    def registrar_retorno(self, dados: dict):
-        """Registra o retorno do veículo no banco de dados."""
-        try:
-            print(f"Registrando retorno com os dados: {dados}")
-            self.modal.destroy()
-        except Exception as e:
-            print(f"Erro ao registrar retorno: {e}")
+    #def registrar_retorno(self, dados: dict):
+    #    """Registra o retorno do veículo no banco de dados."""
+    #    try:
+    #        print(f"Registrando retorno com os dados: {dados}")
+    #        self.modal.destroy()
+    #    except Exception as e:
+    #        print(f"Erro ao registrar retorno: {e}")
 
     def coletar_indice_conteiner(self, event=None):
         """
