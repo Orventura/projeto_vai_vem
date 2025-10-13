@@ -7,24 +7,36 @@ from pathlib import Path
 from tkinter import messagebox
 
 
-def get_base_path(nome_bd) -> Path:
-    """ Retorna ambiente de desenvolvimento ou
-        produção (executável cx_Freeze)
+from pathlib import Path
+import sys
+from tkinter import messagebox
+
+def get_base_path(nome_bd: str) -> Path:
+    """
+    Retorna o caminho base dependendo do ambiente:
+    - Desenvolvimento (executando via script)
+    - Produção (executável gerado por cx_Freeze ou PyInstaller)
     """
     if getattr(sys, 'frozen', False):
-        # Ambiente de produção: busca dentro da pasta onde o executável roda
-        base_path = Path(sys.executable).parent
-        # Ambiente de desenvolvimento
+        # Executável: cx_Freeze ou PyInstaller
+        if hasattr(sys, '_MEIPASS'):
+            # PyInstaller usa _MEIPASS como base temporária
+            base_path = Path(sys._MEIPASS)
+        else:
+            # cx_Freeze usa o diretório do executável
+            base_path = Path(sys.executable).parent
     else:
+        # Ambiente de desenvolvimento
         base_path = Path(__file__).resolve().parent.parent
 
     db_path = base_path / nome_bd
 
     if not db_path.exists():
         db_path.parent.mkdir(parents=True, exist_ok=True)
-        messagebox.showerror('erro',f"⚠️ Banco de dados não encontrado: {base_path / nome_bd}")
+        messagebox.showerror('Erro', f"⚠️ Banco de dados não encontrado: {db_path}")
 
     return db_path
+
 
 BD_CABOTAGEM = get_base_path(Path('data/database_cabotagem.db'))
 BD_RODOVIARIO = get_base_path(Path('data/rodoviario.db'))
@@ -215,12 +227,21 @@ class RecursosVisuais:
         self.carregar_recursos()
 
     def get_base_path(self) -> Path:
-        """Retorna o diretório base dependendo do ambiente (dev ou cx_Freeze)"""
+        """
+        Retorna o diretório base dependendo do ambiente:
+        - Desenvolvimento (executando via script)
+        - Produção (executável gerado por cx_Freeze ou PyInstaller)
+        """
         if getattr(sys, 'frozen', False):
-            # Executável com cx_Freeze
-            return Path(sys.executable).parent
+            # Executável: cx_Freeze ou PyInstaller
+            if hasattr(sys, '_MEIPASS'):
+                # PyInstaller usa _MEIPASS como base temporária
+                return Path(sys._MEIPASS)
+            else:
+                # cx_Freeze usa o diretório do executável
+                return Path(sys.executable).parent
         else:
-            # Ambiente de desenvolvimento (arquivo Python)
+            # Ambiente de desenvolvimento
             return Path(__file__).resolve().parent.parent  # sobe 1 nível (de utils para raiz)
 
     def carregar_recursos(self):
@@ -238,6 +259,7 @@ class RecursosVisuais:
             self.receber = ctk.CTkImage(Image.open(self.img_dir / 'receber_veiculo.png'), size=(28, 28))
             self.exportar = ctk.CTkImage(Image.open(self.img_dir / 'exportar.png'), size=(28, 28))
             self.config = ctk.CTkImage(Image.open(self.img_dir / 'config.png'), size=(28, 28))
+            self.icone = ctk.CTkImage(Image.open(self.img_dir / 'icone.ico'), size=(28, 28))
 
         except Exception as e:
             messagebox.showerror("Erro", f"Falha ao carregar imagens: {str(e)}")

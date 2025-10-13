@@ -9,6 +9,7 @@ from src.rodoviario import Rodoviario
 from src.modal_cab_entrada import FormularioEntrada
 from src.bd import BancoDeDados
 from src.bd_cabotagem import Database
+from utils.config import RecursosVisuais
 
 with BancoDeDados() as bd:
     bd._criar_tabela()
@@ -20,11 +21,12 @@ class JanelaPrincipal:
     def __init__(self):
         """Inicializa a janela principal da aplicação."""
         ctk.set_appearance_mode("dark")
+        self.img = RecursosVisuais()
 
         self.root = ctk.CTk()
         self.root.title("Sistema")
         self.root.geometry('1000x460')
-        self.root.iconbitmap(r'utils\img\icone.ico')
+        #self.root.iconbitmap(self.img.icone)
 
         self.entradas = Entradas(self.root)
         self.recebimento = Recebimento(self.root)
