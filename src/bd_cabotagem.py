@@ -136,20 +136,26 @@ class Database:
     # Busca
     # -----------------------
     def fetch_base(self, **filters):
-        if filters:
-            conditions = ' AND '.join(f"{k}=?" for k in filters)
-            self.cursor.execute(f"SELECT * FROM BASE WHERE {conditions}", tuple(filters.values()))
-        else:
-            self.cursor.execute("SELECT * FROM BASE")
-        return [dict(row) for row in self.cursor.fetchall()]
+        try:
+            if filters:
+                conditions = ' AND '.join(f"{k}=?" for k in filters)
+                self.cursor.execute(f"SELECT * FROM BASE WHERE {conditions}", tuple(filters.values()))
+            else:
+                self.cursor.execute("SELECT * FROM BASE")
+            return [dict(row) for row in self.cursor.fetchall()]
+        except Exception as e:
+            raise RuntimeError(f"Erro ao buscar dados da tabela BASE: {e}")
     
     def fetch_status(self, **filters):
-        if filters:
-            conditions = ' AND '.join(f"{k}=?" for k in filters)
-            self.cursor.execute(f"SELECT * FROM STATUS WHERE {conditions}", tuple(filters.values()))
-        else:
-            self.cursor.execute("SELECT * FROM STATUS")
-        return [dict(row) for row in self.cursor.fetchall()]
+        try:
+            if filters:
+                conditions = ' AND '.join(f"{k}=?" for k in filters)
+                self.cursor.execute(f"SELECT * FROM STATUS WHERE {conditions}", tuple(filters.values()))
+            else:
+                self.cursor.execute("SELECT * FROM STATUS")
+            return [dict(row) for row in self.cursor.fetchall()]
+        except Exception as e:
+            raise RuntimeError(f"Erro ao buscar dados da tabela STATUS: {e}")
     
     # -----------------------
     # Atualizações

@@ -6,8 +6,9 @@ from controllers.ctrl_modal_retorno import ControlRetorno
 
 
 class ModalRetorno(ctk.CTkToplevel):
-    def __init__(self, master):
+    def __init__(self, master, on_close=None):
         super().__init__(master)
+        self.on_close = on_close
         self.ctrl = ControlRetorno(self)
         self.title("REGISTRAR RETORNO")
         self.resizable(False, False)
@@ -15,7 +16,7 @@ class ModalRetorno(ctk.CTkToplevel):
         self.focus_force()
 
 
-        self.frame_tabela = ctk.CTkFrame(self, width=400, height=200, fg_color='transparent')
+        self.frame_tabela = ctk.CTkFrame(self, width=800, height=200, fg_color='transparent')
         self.frame_tabela.pack(side='top', padx=10, pady=10)
 
 
@@ -24,8 +25,10 @@ class ModalRetorno(ctk.CTkToplevel):
 
         self.e_pesquisa = CustomEntry(self.frame_inferior, placeholder_text="🔍      Pesquisar...", width=200)
         self.e_pesquisa.pack(pady=10, padx=10, side='left')
+        self.e_pesquisa.bind("<KeyRelease>", self.ctrl.filtrar_sheet)
 
-        self.btn_fechar = CustomButton(self.frame_inferior, width=50, text="Salvar", command=self.destroy)
+
+        self.btn_fechar = CustomButton(self.frame_inferior, width=50, text="Retornar", command=self.lancar_retorno)
         self.btn_fechar.pack(pady=10)
 
         self.carregar_sheet()
@@ -39,8 +42,8 @@ class ModalRetorno(ctk.CTkToplevel):
             self.frame_tabela,
             data=self.df_cabotagem_sheet.values.tolist(),
             headers=list(self.df_cabotagem_sheet.columns),
-            width=778,
-            height=406,
+            width=800,
+            height=450,
             show_row_index=True,
             show_x_scrollbar=True,
             show_y_scrollbar=True,
@@ -55,9 +58,10 @@ class ModalRetorno(ctk.CTkToplevel):
         self.sheet.header_font(("Calibri", 10, "bold"))    # Fonte do cabeçalho
         self.sheet.index_font(("Calibri", 10, "normal"))   # Fonte do índice (se estiver visível)
         self.sheet.extra_bindings([
-                ("row_select", self.ctrl.coletar_indice)
+                ("row_select", self.ctrl.coletar_indice_conteiner)
                 ])
         self.sheet.pack()
+
     def _carregar_tabelas(self):
         """Carrega as tabelas do banco de dados para alimentar o Sheet"""
         df_cabotagem_completa, df_cabotagem_sheet = veiculos_cabotagem()
@@ -76,6 +80,14 @@ class ModalRetorno(ctk.CTkToplevel):
             print(f"Erro ao processar tabela: {e}")
             tabela_para_sheet = pd.DataFrame()
         return tabela_para_sheet
+    
+    def lancar_retorno(self):
+        """Atualiza o banco de dados com o retorno do veículo"""
+        self.ctrl.lancar_dados()
+        self.on_close()
+        self.destroy()
+
+
 
 
 

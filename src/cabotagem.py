@@ -227,7 +227,7 @@ class Cabotagem:
 
     def abrir_retorno(self):
         """Abre o modal Retorno de Veículo"""
-        self.modal_retorno = ModalRetorno(self.root)
+        self.modal_retorno = ModalRetorno(self.root, on_close=self.resetar_sheet)
         self.modal_retorno.grab_set()
         self.modal_retorno.focus_force()
 

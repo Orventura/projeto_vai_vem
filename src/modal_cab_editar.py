@@ -5,6 +5,7 @@ from src.bd_cabotagem import Database
 from utils.config import CustomButton, CustomComboBox, CustomEntry, CustomLabel
 from getpass import getuser
 from models.model_cab_config import Listas
+from datetime import datetime
 
 
 class EditarStatus(ctk.CTkToplevel):
@@ -114,6 +115,7 @@ class EditarStatus(ctk.CTkToplevel):
             dados_status = row[0]
             dados_status.pop('INDICE')
             dados_status["USUARIO"] = str(getuser()).upper()
+            dados_status['DT_ENTRADA'] = datetime.now().strftime('%Y-%m-%d')
 
             # Lança os dados na tabela de status
             con.insert_status(**dados_status)

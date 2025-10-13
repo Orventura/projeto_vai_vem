@@ -47,7 +47,6 @@ class CtrlLiberar:
 
         return dados_coletados
 
-
     def validar_vazios(self, dados: dict) -> bool:
         """
         Valida os campos para não permitir entradas vazias,
@@ -199,7 +198,7 @@ class CtrlLiberar:
             # pega o primeiro dicionário (ou ajuste se houver expectativa de múltiplos)
             dados_status = dados_status_list[0].copy()  # copy para não mutar o objeto original
             # atualiza a data de entrada (use um formato adequado)
-            dados_status['DT_ENTRADA'] = '2025-01-01'
+            dados_status['DT_ENTRADA'] = datetime.now().strftime('%Y-%m-%d')
     
             # remove a coluna INDICE antes de inserir (se necessário)
             dados_status.pop('INDICE', None)

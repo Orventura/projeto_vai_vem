@@ -77,44 +77,61 @@ class FormularioEntrada(ctk.CTkToplevel):
         )
         botao_config.grid(row=len(self._campos), column=0, sticky='w')
 
+    def _validar_conteiner(self):
+        conteiner = self.widgets["Conteiner:"].get().strip().upper().replace('-', '').replace(' ', '')
+        if len(conteiner) != 11:
+            messagebox.showerror("Erro", "O número do conteiner deve ter 11 caracteres.")
+            raise ValueError("O número do conteiner deve ter 11 caracteres.")
+        for i, letra in enumerate(conteiner):
+            if i < 4 and not letra.isalpha():
+                messagebox.showerror("Erro", "Os 4 primeiros caracteres do conteiner devem ser letras.")
+                raise ValueError("Os 4 primeiros caracteres do conteiner devem ser letras.")
+            elif i >= 4 and not letra.isdigit():
+                messagebox.showerror("Erro", "Os últimos caracteres do conteiner devem ser números.")
+                raise ValueError("Os últimos caracteres do conteiner devem ser números.")
+        return conteiner
+
     def _lancar_dados(self):
-        user = getpass.getuser()
-        dados = {}
-        try:
-            # Coleta os dados
-            for texto, widget in self.widgets.items():
-                if isinstance(widget, CustomEntry) or isinstance(widget, CustomComboBox):
-                    dados[texto] = widget.get().strip().upper()
-                elif isinstance(widget, DateEntry):
-                    dados[texto] = widget.get_date().strftime('%Y-%m-%d')
+        if self._validar_conteiner():
+            self.conteiner = self._validar_conteiner()
+            user = getpass.getuser()
+            dados = {}
+            try:
+                # Coleta os dados
+                for texto, widget in self.widgets.items():
+                    if isinstance(widget, CustomEntry) or isinstance(widget, CustomComboBox):
+                        dados[texto] = widget.get().strip().upper()
+                    elif isinstance(widget, DateEntry):
+                        dados[texto] = widget.get_date().strftime('%Y-%m-%d')
 
-            # Validação: verifica se algum campo está vazio
-            for key, value in dados.items():
-                if value == "":
-                    raise ValueError(f'Campo "{key}" é obrigatório!')
+                # Validação: verifica se algum campo está vazio
+                for key, value in dados.items():
+                    if value == "":
+                        raise ValueError(f'Campo "{key}" é obrigatório!')
 
-            self.dados_finais  = dicionario_entrada_veiculos(list(dados.values()))
-            self.dados_status = dicionario_editar_status(list(self.dados_finais.values()), user)
-        
-            with Database() as db:
-                # Converter a string de data para date
-                dt_formatada = datetime.strptime(self.dados_finais["DT_ENTRADA"], "%Y-%m-%d").date()
-                self.dados_finais["DT_ENTRADA"] = dt_formatada
+                self.dados_finais  = dicionario_entrada_veiculos(list(dados.values()))
+                self.dados_status = dicionario_editar_status(list(self.dados_finais.values()), user)
 
-                # Inserir usando **kwargs
-                id_inserido = db.insert_base(**self.dados_finais)
-            
-            with Database() as db:
-                db.insert_status(**self.dados_status)
+                with Database() as db:
+                    # Converter a string de data para date
+                    dt_formatada = datetime.strptime(self.dados_finais["DT_ENTRADA"], "%Y-%m-%d").date()
+                    self.dados_finais["DT_ENTRADA"] = dt_formatada
+                    self.dados_finais["CONTEINER"] = self.conteiner.upper()
 
-            if self.on_close:
-                self.on_close()
-                self.destroy()
+                    # Inserir usando **kwargs
+                    id_inserido = db.insert_base(**self.dados_finais)
 
-            messagebox.showinfo('Sucesso', 'O veículo foi registrado com êxito!')
+                with Database() as db:
+                    db.insert_status(**self.dados_status)
 
-        except Exception as e:
-            messagebox.showerror('Erro', str(e))
+                if self.on_close:
+                    self.on_close()
+                    self.destroy()
+
+                messagebox.showinfo('Sucesso', 'O veículo foi registrado com êxito!')
+
+            except Exception as e:
+                messagebox.showerror('Erro', str(e))
 
     def _carregar_listas(self):
         """Retorna dicionario, para carregar todas as listas de combobox"""
