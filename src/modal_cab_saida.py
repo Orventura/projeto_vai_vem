@@ -44,16 +44,18 @@ class ModalSaida(ctk.CTkToplevel):
         self.btn_buscar_saida.pack(pady=5, padx=40, side='left') 
 
         if not self.sheet:
+            df = self.ctrl.carregar_tabela_liberados()
+            self.df_sheet = df
+            print(self.df_sheet)
             self.modo_atual = ctk.get_appearance_mode()
             self.sheet = CustomSheet(
                 self.frame_tabela,
-                data=[],
-                headers=['INDICE', 'CONTEINER', 'NF', 'DATA DE SAÍDA', 'STATUS', 'DIAS', '✔️'],
+                data=df.values.tolist(),
+                headers=['INDICE', 'CONTEINER', 'DT_ENTRADA', "NOTA", 'STATUS', 'DIAS'],
                 width=500,
                 height=450,
             )
             self.sheet.change_theme('dark' if self.modo_atual == 'Dark' else 'light_blue')
-            self.sheet.checkbox("G", checked=True)
             self.sheet.pack(pady=5, side='top')
             self.sheet.set_all_column_widths()
 
@@ -63,6 +65,7 @@ class ModalSaida(ctk.CTkToplevel):
             self.atualizar_tabelas()
             self.sheet.destroy()
             self.modo_atual = ctk.get_appearance_mode()
+            
             self.sheet = CustomSheet(
                 self.frame_tabela,
                 data=self.df_sheet.values.tolist(),
