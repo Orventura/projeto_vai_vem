@@ -28,13 +28,11 @@ class ControlRetorno:
             # obtém seleção do sheet do modal (ModalRetorno.armazena o CustomSheet em self.sheet)
             selecionados = self.modal.sheet.get_currently_selected()
             if not selecionados:
-                print("Nenhuma linha selecionada.")
                 return None
 
             linha = selecionados[0]
             dados_linha = self.modal.sheet.get_row_data(linha)
             conteiner = dados_linha[5]
-            print(f'DEBUG Dados da linha selecionada: {dados_linha}')
 
             # pega os dataframes diretamente do modelo
             df_cabotagem_completa, df_cabotagem_sheet = veiculos_cabotagem()
@@ -140,7 +138,6 @@ class ControlRetorno:
         try:
             with Database() as db:
                 dados_status = db.fetch_base(INDICE=int(dados_do_sheet['INDICE']))
-                print(f"DEBUG dados_status antes de ajustar: {dados_status}")
                 dados_status[0]['DT_ENTRADA'] = dados_do_sheet['DT_ENTRADA']
                 dados_status[0].pop("INDICE")
         except Exception as e:

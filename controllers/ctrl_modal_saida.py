@@ -3,12 +3,15 @@ from tkinter import messagebox, filedialog as fd
 import pandas as pd
 from datetime import datetime
 from models.model_veiculos import veiculos_cabotagem
+from src.bd_cabotagem import Database
+from getpass import getuser
 
 
 class ControlSaida:
     """Controlador para o modal de saida de veículo."""
     def __init__(self, modal):
         self.modal = modal
+        self.user = str(getuser()).upper()
 
     def carregar_tabela_saida(self) -> pd.DataFrame:
         """Coleta os dados da planilha de controle de embarques Cabotagem,
@@ -28,20 +31,24 @@ class ControlSaida:
                                     'Nota': 'NOTA_FISCAL', 
                                     'Saída Philco': 'DT_SAIDA'},
                                     inplace=True)
+                df['NOTA_FISCAL'] = df['NOTA_FISCAL'].apply(lambda x: self.limpar_nf(str(x)))
+
             except Exception as e:
                 messagebox.showerror("Erro", f"Erro ao carregar a planilha:\n{e}")
         elif not self.local_planilha:
             messagebox.showerror("Erro", "Verifique o arquivo selecionado:\nSe possui as colunas (Contêiner, Saída Philco).\nSe possui a planilha 'Base'")
         return df
 
+    def limpar_nf(self, valor: str) -> str:
+        valor_str = str(valor)
+        novo = valor_str.lstrip('0').split('-')[0].strip()
+        return novo
+
+
     def carregar_tabela_liberados(self) -> pd.DataFrame:
         """Carrega as tabelas do banco de dados para alimentar o Sheet
             df_liberados: Dataframe dos dados do banco cabotagem
             """
-        def limpar_nf(valor):
-            valor_str = str(valor)
-            valor_str.lstrip('0').split('-')[0].strip()
-            return valor_str
 
         df_cabotagem_completa, df_cabotagem_sheet = veiculos_cabotagem()
         try:
@@ -49,12 +56,13 @@ class ControlSaida:
             df_liberados = df_liberados[
                                                 (df_liberados['STATUS'] == 'LIBERADO')
                                             ]
-            df_liberados['NOTA_FISCAL'] = df_liberados['NOTA_FISCAL'].apply(lambda x: limpar_nf(x))
             if not df_liberados.empty:
                 df_liberados['DT_ENTRADA'] = pd.to_datetime(df_liberados['DT_ENTRADA'], errors='coerce')
                 hoje = pd.Timestamp(datetime.now().date())
                 df_liberados['DIAS'] = (hoje - df_liberados['DT_ENTRADA']).dt.days
                 df_liberados['DT_ENTRADA'] = df_liberados['DT_ENTRADA'].dt.strftime('%d/%m/%Y')
+                df_liberados['NOTA_FISCAL'] = df_liberados['NOTA_FISCAL'].apply(lambda x: self.limpar_nf(str(x)))
+
         except Exception as e:
             print(f"Erro ao processar tabela: {e}")
             df_liberados = pd.DataFrame()
@@ -63,56 +71,115 @@ class ControlSaida:
 
     def tabelas_para_sheet(self):
         """Carrega e cruza as tabelas de saída e liberados, validando os dados."""
-    
+
         # Carregamento das tabelas
         df_liberados = self.carregar_tabela_liberados()
         df_saida = self.carregar_tabela_saida()
-    
+
         # Validação de carregamento
         if df_saida.empty:
-            messagebox.showerror("Erro", "⚠️ Sem dados de saída para atualizar.")
-            return pd.DataFrame()
-    
+            msg = "⚠️ Sem dados de saída para atualizar."
+            msg_type = "erro"
+            return pd.DataFrame(), pd.DataFrame(), msg, msg_type
+
         if df_liberados.empty:
-            messagebox.showerror("Erro", "⚠️ Sem dados de veículos liberados.")
-            return pd.DataFrame()
-    
+            msg = "⚠️ Sem dados de veículos liberados."
+            msg_type = "erro"
+            return pd.DataFrame(), pd.DataFrame(), msg, msg_type
+
         # Padronização de tipos
         df_saida['NOTA_FISCAL'] = df_saida['NOTA_FISCAL'].astype(str)
         df_liberados['NOTA_FISCAL'] = df_liberados['NOTA_FISCAL'].astype(str)
-    
+
         # Merge
         try:
             merge_ok = pd.merge(
                 df_saida,
                 df_liberados,
                 how='left',
-                left_on=['NOTA_FISCAL'],
-                right_on=['NOTA_FISCAL']
+                on='NOTA_FISCAL'
             )
         except Exception as e:
-            messagebox.showerror("Erro ao mesclar", f"❌ Falha ao unir tabelas: {str(e)}")
-            return pd.DataFrame()
-    
+            msg = f"❌ Falha ao unir tabelas: {str(e)}"
+            msg_type = "erro"
+            return pd.DataFrame(), pd.DataFrame(), msg, msg_type
+
         # Filtro por status
         merge_ok = merge_ok[merge_ok['STATUS'] == 'LIBERADO']
         merge_ok['CONTEINER'] = merge_ok.apply(
-                                                lambda row: row['CONTEINER_x'] if row['CONTEINER_x'] == row['CONTEINER_y'] else '',
-                                                axis=1
-                                            )
-        merge_ok = merge_ok[['INDICE', 'CONTEINER', 'NOTA_FISCAL', 'DT_SAIDA','STATUS', 'DIAS']]
-    
-        if merge_ok.empty:
-            messagebox.showinfo("Aviso", "⚠️ Sem datas de saída para atualizar.")
-            return pd.DataFrame()
+            lambda row: row['CONTEINER_x'] if row['CONTEINER_x'] == row['CONTEINER_y'] else '',
+            axis=1
+        )
+        merge_ok = merge_ok[['INDICE', 'CONTEINER', 'NOTA_FISCAL', 'DT_SAIDA', 'STATUS', 'DIAS']]
 
-        df_sheet = merge_ok[merge_ok['CONTEINER'] != ""]
-        df_erro = merge_ok[merge_ok['CONTEINER'] == ""]
+        # Separação dos dados válidos e com erro
+        df_sheet = merge_ok[merge_ok['CONTEINER'] != ""].copy()
+        df_erro = merge_ok[merge_ok['CONTEINER'] == ""][['NOTA_FISCAL']].copy()
 
-        print("\n\n\n",df_sheet, "\n\n\n", df_erro,"\n\n\n")
-        return df_sheet, df_erro
-    
-    
+        # Conversões
+        if not df_sheet.empty:
+            df_sheet['INDICE'] = df_sheet['INDICE'].astype(int)
+            df_sheet['DIAS'] = df_sheet['DIAS'].astype(int)
+            df_sheet['DT_SAIDA'] = pd.to_datetime(df_sheet['DT_SAIDA']).dt.strftime('%d/%m/%Y')
+
+        # Mensagens
+        self.df_sheet = df_sheet
+        self.df_erro = df_erro
+
+        if df_sheet.empty and df_erro.empty:
+            msg = "Sem datas de saída para atualizar.\nSem erros encontrados."
+            msg_type = "info"
+        elif df_sheet.empty and not df_erro.empty:
+            msg = "Sem datas de saída para atualizar.\nForam encontrados erros na NF:\n" + "\n".join(df_erro['NOTA_FISCAL'].tolist())
+            msg_type = "erro"
+        elif not df_sheet.empty and df_erro.empty:
+            msg = "Todas as datas de saída foram atualizadas com sucesso.\nNenhum erro encontrado."
+            msg_type = "sucesso"
+        elif not df_sheet.empty and not df_erro.empty:
+            msg = "Algumas datas de saída serão atualizadas.\nForam encontrados erros na NF:\n" + "\n".join(df_erro['NOTA_FISCAL'].tolist())
+            msg_type = "atenção"
+        
+        if msg_type == "erro" or msg_type == "info":
+            messagebox.showwarning(msg_type.capitalize(), msg)
+
+        return df_sheet, df_erro, msg, msg_type
+
+    def registrar_saida(self):
+        """Atualiza o banco de dados com as saídas registradas."""
+        dados = self.modal.sheet.get_sheet_data()
+        for dado in dados:
+            if dado[6]:
+                dicionario = {
+                    'INDICE': dado[0],
+                    'DT_SAIDA': dado[3],
+                    'STATUS': 'SAIU'
+                }
+                try:
+                    with Database() as db:
+                        db.update_base(indice=int(dicionario['INDICE']),
+                                        DT_SAIDA=(datetime.strptime(dicionario['DT_SAIDA'], '%d/%m/%Y').strftime('%Y-%m-%d')),
+                                        STATUS=dicionario['STATUS'])
+                except Exception as e:
+                    messagebox.showerror("Erro", f"Erro ao atualizar o banco de dados:\n{e}")
+                    return
+                try:
+                    with Database() as db:
+                        dados_status = db.fetch_base(INDICE=int(dicionario['INDICE']))
+                except Exception as e:
+                    messagebox.showerror("Erro", f"Erro ao buscar dados para status:\n{e}")
+                    return
+                if dados_status:
+                    dados_status = dados_status[0]
+                    dados_status.pop("INDICE")
+                    dados_status['DT_ENTRADA'] = datetime.now().strftime('%Y-%m-%d')
+                    dados_status['USUARIO'] = str(getuser()).upper()
+                    try:
+                        with Database() as db:
+                            db.insert_status(**dados_status)
+                    except Exception as e:
+                        messagebox.showerror("Erro", f"Erro ao inserir dados na tabela STATUS:\n{e}")
+                        return
+
 if __name__ == "__main__":
     app = ControlSaida(None)
     app.tabelas_para_sheet()

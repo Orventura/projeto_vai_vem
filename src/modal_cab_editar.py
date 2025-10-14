@@ -161,7 +161,12 @@ class EditarStatus(ctk.CTkToplevel):
         """Retorna dicionario, para carregar todas as listas de combobox"""
         with Listas() as users:
             dicionario = users.dicionario_de_listas()
-            return dicionario
+        dicionario['situacao'] = [
+            s for s in dicionario['situacao']
+            if s not in ['SAIU', 'LIBERADO']
+        ]
+
+        return dicionario
 
     def fechar(self):
         self.destroy()
