@@ -4,6 +4,7 @@ from models.model_cab_config import Listas
 from tkinter import messagebox
 from src.bd_cabotagem import Database
 from datetime import datetime, timedelta
+from getpass import getuser
 
 class CtrlLiberar:
     """Classe responsável por controlar o modal de liberação de veículos"""
@@ -202,6 +203,7 @@ class CtrlLiberar:
     
             # remove a coluna INDICE antes de inserir (se necessário)
             dados_status.pop('INDICE', None)
+            dados_status['USUARIO'] = str(getuser()).upper
     
         except Exception as e:
             messagebox.showerror('Erro Tabela STATUS', f'Não foi possível preparar os dados de STATUS:\n {str(e)}')

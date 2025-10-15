@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from utils.config import *
 import pandas as pd
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
 import getpass
 import platform
 from datetime import datetime
@@ -10,10 +10,11 @@ from src.modal_cab_editar import EditarStatus
 from src.modal_cab_liberar import Liberacao
 from src.modal_cab_config import ModalConfiguracoes
 from models.model_cab_config import Listas
-from models.model_veiculos import veiculos_cabotagem
+from models.model_veiculos import veiculos_cabotagem, arquivos_base_status
 from src.modal_cab_retorno import ModalRetorno
 from src.modal_cab_saida import ModalSaida
 from controllers.ctrl_modal_saida import ControlSaida
+
 
 
 class Cabotagem:
@@ -48,6 +49,7 @@ class Cabotagem:
             "Liberar Veículo": {"imagem": self.img.liberar, "comando": lambda: self.abrir_liberacao()},
             "Registrar Saída": {"imagem": self.img.sair, "comando": lambda: self.abrir_saida()},
             "Retornar Veículo": {"imagem": self.img.retornar, "comando": lambda: self.abrir_retorno()},
+            "Exportar Arquivo": {"imagem": self.img.exportar, "comando": lambda: self.exportar_arquivo()},
             "Configurações": {"imagem": self.img.config, "comando": lambda: self.abrir_configuracoes()}
         }
 
@@ -110,6 +112,38 @@ class Cabotagem:
     def resetar_sheet(self):
         self.sheet.destroy()
         self.carregar_sheet()
+    
+    def exportar_arquivo(self):
+        # Obtém os DataFrames
+        base, status = arquivos_base_status()
+
+        # Verifica se os DataFrames estão vazios
+        if base.empty and status.empty:
+            messagebox.showwarning("Exportação", "⚠️ Nenhum dado disponível para exportar.")
+            return
+
+        # Abre diálogo para o usuário escolher onde salvar
+        caminho = filedialog.asksaveasfilename(
+            defaultextension=".xlsx",
+            filetypes=[("Arquivo Excel", "*.xlsx")],
+            title="Salvar como"
+        )
+
+        if not caminho:
+            messagebox.showinfo("Exportação cancelada", "Nenhum arquivo foi salvo.")
+            return
+
+        try:
+            # Exporta os DataFrames para o Excel com duas abas
+            with pd.ExcelWriter(caminho, engine='openpyxl') as writer:
+                base.to_excel(writer, sheet_name='Base', index=False)
+                status.to_excel(writer, sheet_name='Status', index=False)
+
+            messagebox.showinfo("Exportação concluída", f"✅ Arquivo salvo com sucesso em:\n{caminho}")
+
+        except Exception as e:
+            messagebox.showerror("Erro ao exportar", f"❌ Falha ao salvar o arquivo:\n{str(e)}")
+        
 
     def filtrar_sheet(self, event=None):
         """Filtra a tabela de recebimento em todas as colunas."""

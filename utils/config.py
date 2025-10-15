@@ -11,20 +11,42 @@ from pathlib import Path
 import sys
 from tkinter import messagebox
 
+#def get_base_path(nome_bd: str) -> Path:
+#    """
+#    Retorna o caminho base dependendo do ambiente:
+#    - Desenvolvimento (executando via script)
+#    - Produção (executável gerado por cx_Freeze ou PyInstaller)
+#    """
+#    if getattr(sys, 'frozen', False):
+#        # Executável: cx_Freeze ou PyInstaller
+#        if hasattr(sys, '_MEIPASS'):
+#            # PyInstaller usa _MEIPASS como base temporária
+#            base_path = Path(sys._MEIPASS)
+#        else:
+#            # cx_Freeze usa o diretório do executável
+#            base_path = Path(sys.executable).parent
+#    else:
+#        # Ambiente de desenvolvimento
+#        base_path = Path(__file__).resolve().parent.parent
+#
+#    db_path = base_path / nome_bd
+#
+#    if not db_path.exists():
+#        db_path.parent.mkdir(parents=True, exist_ok=True)
+#        messagebox.showerror('Erro', f"⚠️ Banco de dados não encontrado: {db_path}")
+#
+#    return db_path
+
 def get_base_path(nome_bd: str) -> Path:
     """
     Retorna o caminho base dependendo do ambiente:
     - Desenvolvimento (executando via script)
-    - Produção (executável gerado por cx_Freeze ou PyInstaller)
+    - Produção (executável gerado por PyInstaller ou cx_Freeze)
     """
     if getattr(sys, 'frozen', False):
-        # Executável: cx_Freeze ou PyInstaller
-        if hasattr(sys, '_MEIPASS'):
-            # PyInstaller usa _MEIPASS como base temporária
-            base_path = Path(sys._MEIPASS)
-        else:
-            # cx_Freeze usa o diretório do executável
-            base_path = Path(sys.executable).parent
+        # Executável: PyInstaller one-dir
+        exe_dir = Path(sys.executable).parent
+        base_path = exe_dir / '_internal'
     else:
         # Ambiente de desenvolvimento
         base_path = Path(__file__).resolve().parent.parent

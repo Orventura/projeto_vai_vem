@@ -161,6 +161,8 @@ class ControlRetorno:
                 dados_status = db.fetch_base(INDICE=int(dados_do_sheet['INDICE']))
                 dados_status[0]['DT_ENTRADA'] = dados_do_sheet['DT_ENTRADA']
                 dados_status[0].pop("INDICE")
+                dados_status[0]['USUARIO'] = str(getuser()).upper
+
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao buscar alterações de status na tabela base: {e}")
             return

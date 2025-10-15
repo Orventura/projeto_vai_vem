@@ -27,6 +27,18 @@ def veiculos_cabotagem():
 
     return tabela_completa, tabela_para_sheet
 
+def arquivos_base_status():
+    """Retorna do as tabelas base e status completas"""
+    with sqlite3.connect(BD_CABOTAGEM) as conn:
+        query = 'SELECT * FROM BASE'
+        tabela_base = pd.read_sql_query(query, conn)
+
+        query = 'SELECT * FROM STATUS'
+        tabela_status = pd.read_sql_query(query, conn)
+
+    return tabela_base, tabela_status
+
+
 def tipos_veiculo():
     """Retorna as tabelas de veículos disponíveis, dos bancos Rodoviário e Cabotagem"""
     try:
